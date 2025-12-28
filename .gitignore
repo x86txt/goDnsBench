@@ -1,10 +1,10 @@
 # Binaries
+build/
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
-/build/bin/
 
 # Go
 *.test
@@ -12,11 +12,6 @@
 coverage.out
 coverage.html
 vendor/
-
-# Wails
-/build/darwin/
-/build/windows/
-/build/linux/
 
 # Frontend
 frontend/node_modules/
