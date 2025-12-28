@@ -265,13 +265,10 @@ Cloudflare Primary,1.1.1.1,https://cloudflare-dns.com/dns-query,1.1.1.1:853,1.1.
 make deps          # Go dependencies
 make deps-frontend # Frontend dependencies (Bun)
 
-# Build unified binary (includes both GUI and TUI)
+# Build unified binary (includes both GUI and TUI, defaults to GUI)
 make build
 
-# Build CLI/TUI only (for testing)
-make build-cli
-
-# Build GUI only (production build)
+# Build desktop application bundle with Wails (for distribution)
 make build-gui
 
 # Run in TUI mode
@@ -301,10 +298,7 @@ The application uses a single binary that supports both GUI and TUI modes. By de
 
 **TUI Development:**
 ```bash
-make build-cli
-./build/goDnsBench-cli --tui
-# Or with unified binary:
-make build-gui
+make build
 ./build/goDnsBench --tui
 ```
 
@@ -319,8 +313,11 @@ make dev
 
 **Production Build:**
 ```bash
-# Build unified binary (includes GUI)
-make build-gui  # Creates optimized production binary
+# Build unified binary (includes both GUI and TUI)
+make build  # Creates the unified binary
+
+# Or build desktop application bundle (for distribution)
+make build-gui  # Creates platform-specific desktop app bundle with Wails
 ```
 
 ---

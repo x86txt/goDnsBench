@@ -17,26 +17,31 @@ GOMOD=$(GOCMD) mod
 GOFMT=$(GOCMD) fmt
 
 # Build targets
-.PHONY: all build build-cli build-gui clean test deps deps-frontend fmt help tidy run-tui run-gui dev
+.PHONY: all build build-gui build-frontend clean test deps deps-frontend fmt help tidy run-tui run-gui dev
 
-all: deps fmt build-gui
+all: deps fmt build
 
-## build: Build both CLI and GUI
-build: build-cli build-gui
-
-## build-cli: Build the CLI/TUI binary only (same binary, just for TUI usage)
-build-cli:
-	@echo "Building $(BINARY_NAME) binary..."
+## build: Build unified binary (includes both GUI and TUI, defaults to GUI)
+build: build-frontend
+	@echo "Building unified $(BINARY_NAME) binary (GUI + TUI)..."
 	@mkdir -p $(BUILD_DIR)
 	$(GOBUILD) $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME) $(MAIN_PATH)
 	@echo "Binary build complete: $(BUILD_DIR)/$(BINARY_NAME)"
+	@echo "  Run without flags to launch GUI: ./$(BUILD_DIR)/$(BINARY_NAME)"
+	@echo "  Run with --tui flag for terminal mode: ./$(BUILD_DIR)/$(BINARY_NAME) --tui"
 
-## build-gui: Build the GUI application with Wails
-build-gui: deps-frontend
-	@echo "Building $(BINARY_NAME) GUI with Wails..."
+## build-frontend: Build the frontend to create dist directory
+build-frontend: deps-frontend
+	@echo "Building frontend..."
+	@cd frontend && bun run build
+	@echo "Frontend build complete"
+
+## build-gui: Build desktop application bundle with Wails (for distribution)
+build-gui: build-frontend
+	@echo "Building $(BINARY_NAME) desktop application bundle with Wails..."
 	@command -v wails >/dev/null 2>&1 || { echo "Wails CLI not found. Install with: go install github.com/wailsapp/wails/v2/cmd/wails@latest"; exit 1; }
 	wails build
-	@echo "GUI build complete"
+	@echo "Desktop application bundle build complete"
 
 ## clean: Clean build files
 clean:
@@ -81,14 +86,14 @@ tidy:
 	@echo "Tidy complete"
 
 ## run-tui: Build and run in TUI mode
-run-tui: build-cli
+run-tui: build
 	@echo "Running in TUI mode..."
 	$(BUILD_DIR)/$(BINARY_NAME) --tui
 
-## run-gui: Build and run in GUI mode
-run-gui: build-gui
-	@echo "Running in GUI mode..."
-	@./build/bin/$(BINARY_NAME) || echo "GUI binary not found. Run 'make build-gui' first"
+## run-gui: Build and run in GUI mode (default)
+run-gui: build
+	@echo "Running in GUI mode (default)..."
+	$(BUILD_DIR)/$(BINARY_NAME)
 
 ## dev: Run Wails in development mode
 dev: deps-frontend
@@ -96,9 +101,9 @@ dev: deps-frontend
 	@command -v wails >/dev/null 2>&1 || { echo "Wails CLI not found. Install with: go install github.com/wailsapp/wails/v2/cmd/wails@latest"; exit 1; }
 	wails dev
 
-## install: Install the binary to $GOPATH/bin (CLI/TUI only, no GUI)
-install:
-	@echo "Installing $(BINARY_NAME)..."
+## install: Install the unified binary to $GOPATH/bin
+install: build-frontend
+	@echo "Installing unified $(BINARY_NAME) binary..."
 	$(GOCMD) install $(LDFLAGS) $(MAIN_PATH)
 	@echo "Installation complete"
 
@@ -111,24 +116,24 @@ help:
 # Platform-specific builds
 .PHONY: build-linux build-darwin build-windows build-all
 
-## build-linux: Build for Linux (CLI/TUI only, no GUI)
-build-linux:
-	@echo "Building for Linux..."
+## build-linux: Build unified binary for Linux
+build-linux: build-frontend
+	@echo "Building unified binary for Linux..."
 	@mkdir -p $(BUILD_DIR)/linux
 	GOOS=linux GOARCH=amd64 $(GOBUILD) $(LDFLAGS) -o $(BUILD_DIR)/linux/$(BINARY_NAME) $(MAIN_PATH)
 	@echo "Linux build complete"
 
-## build-darwin: Build for macOS (CLI/TUI only, no GUI)
-build-darwin:
-	@echo "Building for macOS..."
+## build-darwin: Build unified binary for macOS
+build-darwin: build-frontend
+	@echo "Building unified binary for macOS..."
 	@mkdir -p $(BUILD_DIR)/darwin
 	GOOS=darwin GOARCH=amd64 $(GOBUILD) $(LDFLAGS) -o $(BUILD_DIR)/darwin/$(BINARY_NAME) $(MAIN_PATH)
 	GOOS=darwin GOARCH=arm64 $(GOBUILD) $(LDFLAGS) -o $(BUILD_DIR)/darwin/$(BINARY_NAME)-arm64 $(MAIN_PATH)
 	@echo "macOS build complete"
 
-## build-windows: Build for Windows (CLI/TUI only, no GUI)
-build-windows:
-	@echo "Building for Windows..."
+## build-windows: Build unified binary for Windows
+build-windows: build-frontend
+	@echo "Building unified binary for Windows..."
 	@mkdir -p $(BUILD_DIR)/windows
 	GOOS=windows GOARCH=amd64 $(GOBUILD) $(LDFLAGS) -o $(BUILD_DIR)/windows/$(BINARY_NAME).exe $(MAIN_PATH)
 	@echo "Windows build complete"

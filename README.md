@@ -254,9 +254,8 @@ goDnsBench/
 make help          # Show all available commands
 make deps          # Download Go dependencies
 make deps-frontend # Install frontend dependencies (Bun)
-make build         # Build unified binary (GUI + TUI)
-make build-cli     # Build CLI/TUI only
-make build-gui     # Build GUI application with Wails
+make build         # Build unified binary (GUI + TUI, defaults to GUI)
+make build-gui     # Build desktop application bundle with Wails (for distribution)
 make clean         # Clean build files
 make test          # Run all tests
 make fmt           # Format code
