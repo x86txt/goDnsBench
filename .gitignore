@@ -1,22 +1,28 @@
 # Binaries
-build/
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
+/build/bin/
 
-# Test binary, built with `go test -c`
+# Go
 *.test
-
-# Output of the go coverage tool
 *.out
-
-# Dependency directories
+coverage.out
+coverage.html
 vendor/
 
-# Go workspace file
-go.work
+# Wails
+/build/darwin/
+/build/windows/
+/build/linux/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.astro/
+frontend/.output/
 
 # IDE
 .idea/
@@ -27,28 +33,33 @@ go.work
 
 # OS
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
-# Config files (user-specific)
-.config/
+# Environment
+.env
+.env.local
+.env.*.local
 
 # Logs
 *.log
+npm-debug.log*
 
-# Temporary files
-tmp/
-temp/
+# Test artifacts
+__debug_bin*
+*.prof
+
+# Local development
+*.local
+.cache/
 
 # Build artifacts
 dist/
+out/
 
-# Frontend
-node_modules/
-frontend/dist/
-frontend/.astro/
-frontend/package-lock.json
-frontend/yarn.lock
-
-# Wails
-wails.json.bak
-frontend/wailsjs/
+# Downloaded server lists (regenerated at runtime)
+servers_cache.json

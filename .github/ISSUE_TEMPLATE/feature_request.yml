@@ -1,0 +1,106 @@
+name: Feature Request
+description: Suggest a new feature or enhancement
+title: "[Feature]: "
+labels: ["enhancement", "triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a feature! Please fill out the form below to help us understand your idea.
+
+  - type: checkboxes
+    id: existing-issue
+    attributes:
+      label: Prerequisites
+      description: Please confirm the following before submitting
+      options:
+        - label: I have searched existing issues and this feature has not been requested
+          required: true
+
+  - type: dropdown
+    id: feature-area
+    attributes:
+      label: Feature Area
+      description: What area of the application does this feature relate to?
+      options:
+        - GUI Interface
+        - TUI Interface
+        - DNS Benchmarking Core
+        - Results / Visualization
+        - Import / Export
+        - Settings / Configuration
+        - New Protocol Support
+        - Cross-Platform Compatibility
+        - Performance
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: Is your feature request related to a problem? Please describe.
+      placeholder: "I'm always frustrated when..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the solution you'd like
+      placeholder: "A clear and concise description of what you want to happen..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Describe any alternative solutions or features you've considered
+    validations:
+      required: false
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use Case
+      description: Describe how you would use this feature
+      placeholder: "When I'm benchmarking DNS servers, I would..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: importance
+    attributes:
+      label: Importance
+      description: How important is this feature to you?
+      options:
+        - Nice to have
+        - Would improve my workflow
+        - Important for my use case
+        - Critical - blocking my usage
+      default: 1
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      description: Would you be willing to help implement this feature?
+      options:
+        - label: I would be willing to submit a PR for this feature
+          required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add any other context, screenshots, or mockups about the feature request
+    validations:
+      required: false

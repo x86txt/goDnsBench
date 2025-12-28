@@ -1,0 +1,162 @@
+name: Bug Report
+description: Report a bug or unexpected behavior
+title: "[Bug]: "
+labels: ["bug", "triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out the form below to help us investigate.
+
+  - type: checkboxes
+    id: existing-issue
+    attributes:
+      label: Prerequisites
+      description: Please confirm the following before submitting
+      options:
+        - label: I have searched the existing issues and this bug has not been reported
+          required: true
+        - label: I am using the latest version of the application
+          required: true
+
+  - type: dropdown
+    id: interface
+    attributes:
+      label: Interface
+      description: Which interface were you using?
+      options:
+        - GUI (default)
+        - TUI (--tui flag)
+      default: 0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      description: What OS are you running?
+      options:
+        - macOS 15 (Sequoia)
+        - macOS 14 (Sonoma)
+        - macOS 13 (Ventura)
+        - macOS 12 (Monterey)
+        - Windows 11
+        - Windows 10
+        - Linux (Ubuntu/Debian)
+        - Linux (Fedora/RHEL)
+        - Linux (Arch)
+        - Linux (Other)
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Application Version
+      description: What version are you running? (Check with --version flag)
+      placeholder: "e.g., 1.2.3"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: dns-protocol
+    attributes:
+      label: DNS Protocol(s) Affected
+      description: Which protocol(s) does this bug affect?
+      multiple: true
+      options:
+        - Standard DNS (UDP)
+        - DNS over HTTPS (DoH)
+        - DNS over TLS (DoT)
+        - DNS over QUIC (DoQ)
+        - All protocols
+        - Not protocol-specific
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is
+      placeholder: Describe what happened...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: Describe what you expected...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Open the application
+        2. Click on '...'
+        3. Configure '...'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: servers
+    attributes:
+      label: DNS Servers Tested
+      description: Which DNS servers were you testing when the bug occurred?
+      placeholder: |
+        e.g., 
+        - Cloudflare (1.1.1.1)
+        - Google (8.8.8.8)
+        - Custom server: 192.168.1.1
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / Error Messages
+      description: Please paste any relevant log output or error messages
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: If applicable, add screenshots to help explain the problem
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add any other context about the problem here
+    validations:
+      required: false
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How severe is this bug for your use case?
+      options:
+        - Low - Minor inconvenience
+        - Medium - Affects functionality but has workaround
+        - High - Significantly impacts usage
+        - Critical - Application unusable
+      default: 1
+    validations:
+      required: true
