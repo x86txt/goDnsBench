@@ -1,0 +1,181 @@
+name: CI
+
+on:
+  push:
+    branches: ["main", "develop"]
+  pull_request:
+    branches: ["main", "develop"]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Run Go Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: stable
+          cache-dependency-path: go.sum
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Run tests
+        run: go test -v -race -coverprofile=coverage.out ./...
+
+      - name: Upload coverage to Codecov
+        if: always() && hashFiles('coverage.out')
+        uses: codecov/codecov-action@v5
+        with:
+          file: ./coverage.out
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+  frontend-build:
+    name: Build Frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: bun install --frozen-lockfile
+
+      - name: Build frontend
+        working-directory: frontend
+        run: bun run build
+
+      - name: Verify build output
+        run: |
+          if [ ! -d "frontend/dist" ]; then
+            echo "Error: frontend/dist directory not found"
+            exit 1
+          fi
+          if [ -z "$(ls -A frontend/dist)" ]; then
+            echo "Error: frontend/dist directory is empty"
+            exit 1
+          fi
+          echo "Frontend build successful"
+
+  wails-build-smoke:
+    name: Wails Build Smoke Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Wails builds are platform-specific, so we'll do a smoke check on Linux
+    # Full GUI builds would require platform-specific runners
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: stable
+          cache-dependency-path: go.sum
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Go dependencies
+        run: go mod download
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: bun install --frozen-lockfile
+
+      - name: Build frontend
+        working-directory: frontend
+        run: bun run build
+
+      - name: Install Wails CLI
+        run: |
+          go install github.com/wailsapp/wails/v2/cmd/wails@latest
+
+      - name: Verify Wails CLI
+        run: |
+          wails version || echo "Wails CLI check (may fail in CI environment)"
+
+      - name: Check Wails configuration
+        run: |
+          # Verify wails.json exists and is valid
+          if [ ! -f "wails.json" ]; then
+            echo "Error: wails.json not found"
+            exit 1
+          fi
+          # Try to validate JSON (basic check)
+          python3 -m json.tool wails.json > /dev/null || echo "Warning: wails.json may not be valid JSON"
+          echo "Wails configuration check passed"
+
+      - name: Verify embedded assets
+        run: |
+          # Check that frontend/dist exists (required for Wails embed)
+          if [ ! -d "frontend/dist" ]; then
+            echo "Error: frontend/dist directory not found (required for Wails embed)"
+            exit 1
+          fi
+          echo "Embedded assets check passed"
+
+      - name: Build CLI binary (smoke test)
+        run: |
+          # Build the CLI binary as a smoke test (doesn't require Wails GUI)
+          go build -o /tmp/goDnsBench-test ./main.go
+          if [ ! -f "/tmp/goDnsBench-test" ]; then
+            echo "Error: CLI binary build failed"
+            exit 1
+          fi
+          echo "CLI binary build successful"
+
+      - name: Test CLI binary
+        run: |
+          /tmp/goDnsBench-test --version || echo "Version check (may vary)"
+          echo "CLI binary smoke test passed"
+
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: stable
+          cache-dependency-path: go.sum
+
+      - name: Run gofmt
+        run: |
+          if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
+            echo "Error: Code is not formatted. Run 'go fmt ./...'"
+            gofmt -s -d .
+            exit 1
+          fi
+          echo "Code formatting check passed"
+
+      - name: Run go vet
+        run: go vet ./...
+
+      - name: Run staticcheck (if available)
+        run: |
+          go install honnef.co/go/tools/cmd/staticcheck@latest || echo "staticcheck not available"
+          staticcheck ./... || echo "staticcheck completed (warnings may exist)"

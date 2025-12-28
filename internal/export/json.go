@@ -10,6 +10,10 @@ import (
 
 // ExportResultsJSON exports benchmark results to a JSON file
 func ExportResultsJSON(results *benchmark.BenchmarkResults, filepath string) error {
+	if results == nil {
+		return fmt.Errorf("no results to export")
+	}
+
 	// Create a simplified structure for export
 	exportData := map[string]interface{}{
 		"startTime": results.StartTime,

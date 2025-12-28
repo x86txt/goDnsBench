@@ -10,6 +10,10 @@ import (
 
 // ExportResultsCSV exports benchmark results to a CSV file
 func ExportResultsCSV(results *benchmark.BenchmarkResults, filepath string) error {
+	if results == nil {
+		return fmt.Errorf("no results to export")
+	}
+
 	file, err := os.Create(filepath)
 	if err != nil {
 		return fmt.Errorf("failed to create file: %w", err)

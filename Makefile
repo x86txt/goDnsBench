@@ -2,7 +2,7 @@
 
 # Variables
 BINARY_NAME=goDnsBench
-MAIN_PATH=./cmd/goDnsBench
+MAIN_PATH=.
 BUILD_DIR=./build
 VERSION?=0.1.0
 LDFLAGS=-ldflags "-X main.version=$(VERSION)"
@@ -24,12 +24,12 @@ all: deps fmt build-gui
 ## build: Build both CLI and GUI
 build: build-cli build-gui
 
-## build-cli: Build the CLI/TUI binary only
+## build-cli: Build the CLI/TUI binary only (same binary, just for TUI usage)
 build-cli:
-	@echo "Building $(BINARY_NAME) CLI..."
+	@echo "Building $(BINARY_NAME) binary..."
 	@mkdir -p $(BUILD_DIR)
-	$(GOBUILD) $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-cli $(MAIN_PATH)
-	@echo "CLI build complete: $(BUILD_DIR)/$(BINARY_NAME)-cli"
+	$(GOBUILD) $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME) $(MAIN_PATH)
+	@echo "Binary build complete: $(BUILD_DIR)/$(BINARY_NAME)"
 
 ## build-gui: Build the GUI application with Wails
 build-gui: deps-frontend
@@ -83,7 +83,7 @@ tidy:
 ## run-tui: Build and run in TUI mode
 run-tui: build-cli
 	@echo "Running in TUI mode..."
-	$(BUILD_DIR)/$(BINARY_NAME)-cli --tui
+	$(BUILD_DIR)/$(BINARY_NAME) --tui
 
 ## run-gui: Build and run in GUI mode
 run-gui: build-gui
@@ -96,7 +96,7 @@ dev: deps-frontend
 	@command -v wails >/dev/null 2>&1 || { echo "Wails CLI not found. Install with: go install github.com/wailsapp/wails/v2/cmd/wails@latest"; exit 1; }
 	wails dev
 
-## install: Install the binary to $GOPATH/bin
+## install: Install the binary to $GOPATH/bin (CLI/TUI only, no GUI)
 install:
 	@echo "Installing $(BINARY_NAME)..."
 	$(GOCMD) install $(LDFLAGS) $(MAIN_PATH)
@@ -111,14 +111,14 @@ help:
 # Platform-specific builds
 .PHONY: build-linux build-darwin build-windows build-all
 
-## build-linux: Build for Linux
+## build-linux: Build for Linux (CLI/TUI only, no GUI)
 build-linux:
 	@echo "Building for Linux..."
 	@mkdir -p $(BUILD_DIR)/linux
 	GOOS=linux GOARCH=amd64 $(GOBUILD) $(LDFLAGS) -o $(BUILD_DIR)/linux/$(BINARY_NAME) $(MAIN_PATH)
 	@echo "Linux build complete"
 
-## build-darwin: Build for macOS
+## build-darwin: Build for macOS (CLI/TUI only, no GUI)
 build-darwin:
 	@echo "Building for macOS..."
 	@mkdir -p $(BUILD_DIR)/darwin
@@ -126,7 +126,7 @@ build-darwin:
 	GOOS=darwin GOARCH=arm64 $(GOBUILD) $(LDFLAGS) -o $(BUILD_DIR)/darwin/$(BINARY_NAME)-arm64 $(MAIN_PATH)
 	@echo "macOS build complete"
 
-## build-windows: Build for Windows
+## build-windows: Build for Windows (CLI/TUI only, no GUI)
 build-windows:
 	@echo "Building for Windows..."
 	@mkdir -p $(BUILD_DIR)/windows

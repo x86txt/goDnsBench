@@ -76,14 +76,21 @@ goDnsBench is a cross-platform DNS benchmarking tool with both TUI (Terminal UI)
 
 ```
 goDnsBench/
+├── main.go                      # Main entry point (routes GUI/TUI/headless modes)
+├── app.go                       # Wails application backend (App struct + API methods)
+├── gui.go                       # Wails GUI launcher
+├── api_dto.go                   # Data Transfer Objects for Wails API layer
 ├── cmd/
-│   └── goDnsBench/
-│       └── main.go              # CLI/TUI entry point
+│   └── goDnsBench/              # (Legacy directory, not used in unified binary)
 ├── internal/
 │   ├── benchmark/
 │   │   ├── metrics.go           # Statistical calculations
+│   │   ├── metrics_test.go      # Unit tests for metrics
 │   │   ├── results.go           # Result data structures
+│   │   ├── results_test.go      # Unit tests for results
 │   │   └── runner.go            # Benchmark orchestration
+│   ├── cli/
+│   │   └── headless.go          # Headless/CLI benchmark execution
 │   ├── dns/
 │   │   ├── types.go             # Common DNS types
 │   │   ├── client.go            # Standard DNS client
@@ -93,13 +100,18 @@ goDnsBench/
 │   │   └── capability.go        # Protocol detection
 │   ├── config/
 │   │   ├── servers.go           # Server management
+│   │   ├── servers_test.go      # Unit tests for servers
 │   │   ├── loader.go            # JSON/CSV loading
-│   │   └── settings.go          # User preferences
+│   │   ├── loader_test.go       # Unit tests for loader
+│   │   ├── settings.go          # User preferences
+│   │   └── settings_test.go     # Unit tests for settings
 │   ├── tui/
 │   │   └── app.go               # BubbleTea application
 │   └── export/
 │       ├── csv.go               # CSV exporter
-│       └── json.go              # JSON exporter
+│       ├── csv_test.go          # Unit tests for CSV export
+│       ├── json.go              # JSON exporter
+│       └── json_test.go         # Unit tests for JSON export
 ├── frontend/                    # Astro + Tailwind GUI
 │   ├── src/
 │   │   ├── layouts/
@@ -107,16 +119,28 @@ goDnsBench/
 │   │   ├── pages/
 │   │   │   └── index.astro      # Main application page
 │   │   ├── scripts/
-│   │   │   └── app.ts           # Frontend logic & Wails integration
+│   │   │   ├── init.ts          # Main initialization
+│   │   │   ├── api/             # Wails API client
+│   │   │   │   ├── client.ts    # API method wrappers
+│   │   │   │   └── types.ts     # TypeScript types
+│   │   │   ├── charts/          # Chart.js visualizations
+│   │   │   │   ├── latency.ts   # Latency chart rendering
+│   │   │   │   └── comparison.ts # Comparison charts
+│   │   │   └── ui/              # UI modules
+│   │   │       ├── dialogs.ts   # Dialog management
+│   │   │       ├── elements.ts  # DOM element utilities
+│   │   │       ├── filtering.ts # Result filtering logic
+│   │   │       ├── history.ts   # Result history management
+│   │   │       ├── progress.ts  # Progress bar UI
+│   │   │       ├── results.ts   # Results table rendering
+│   │   │       ├── servers.ts   # Server list UI
+│   │   │       └── settings.ts  # Settings modal UI
 │   │   └── wailsjs/             # Generated Wails bindings
 │   ├── astro.config.mjs         # Astro configuration
 │   ├── tailwind.config.js       # Tailwind with theme
 │   ├── tsconfig.json            # TypeScript config
 │   └── package.json             # Frontend dependencies
 ├── build/                       # Build outputs
-├── app.go                       # Wails application backend
-├── gui.go                       # GUI launcher
-├── main.go                      # Main entry point (GUI/TUI router)
 ├── wails.json                   # Wails configuration
 ├── servers.json                 # Default DNS servers
 ├── Makefile                     # Build automation
@@ -125,8 +149,24 @@ goDnsBench/
 ├── .gitignore                   # Git ignore rules
 ├── README.md                    # User documentation
 └── CONTEXT.md                   # This file
-
 ```
+
+### Root-Level Go Files
+
+The root directory contains several `.go` files that are part of the `main` package:
+
+- **`main.go`**: Main entry point that parses command-line flags and routes execution to GUI, TUI, or headless mode
+- **`app.go`**: Wails application backend containing the `App` struct and all methods exposed to the frontend via Wails bindings
+- **`gui.go`**: Wails GUI launcher that configures and starts the Wails application
+- **`api_dto.go`**: Data Transfer Objects (DTOs) and conversion functions between internal Go types and GUI-safe JSON-compatible types
+
+These files are kept in the root because:
+1. They're part of the `main` package, which is required for the application entry point
+2. Wails framework requires the main application struct (`App`) to be accessible from the root package for bindings
+3. They serve as the integration/bridge layer between Wails (GUI framework) and the internal packages
+4. This is a common pattern in Wails applications
+
+While this structure differs from some Go projects where all code lives in `cmd/` or `internal/`, it's appropriate for Wails-based desktop applications where the root package acts as the integration layer.
 
 ---
 
@@ -215,28 +255,31 @@ Cloudflare Primary,1.1.1.1,https://cloudflare-dns.com/dns-query,1.1.1.1:853,1.1.
 
 ### Prerequisites
 - Go 1.21 or higher
-- Node.js 18+ and npm (for GUI)
+- Bun (for frontend): `curl -fsSL https://bun.sh/install | bash`
 - Wails CLI: `go install github.com/wailsapp/wails/v2/cmd/wails@latest`
 
 ### Build Commands
 
 ```bash
 # Download all dependencies
-make deps
-make deps-frontend
+make deps          # Go dependencies
+make deps-frontend # Frontend dependencies (Bun)
 
-# Build CLI/TUI only
+# Build unified binary (includes both GUI and TUI)
+make build
+
+# Build CLI/TUI only (for testing)
 make build-cli
 
-# Build GUI only
+# Build GUI only (production build)
 make build-gui
-
-# Build both
-make build
 
 # Run in TUI mode
 make run-tui
-./build/goDnsBench-cli --tui
+# Or: ./build/goDnsBench --tui
+
+# Run GUI (default mode)
+./build/goDnsBench
 
 # Run GUI in development mode (hot reload)
 make dev
@@ -253,19 +296,30 @@ make build-all       # All platforms
 
 ### Development Workflow
 
+**Unified Binary:**
+The application uses a single binary that supports both GUI and TUI modes. By default, running the binary launches the GUI. Use the `--tui` flag for terminal mode.
+
 **TUI Development:**
 ```bash
 make build-cli
 ./build/goDnsBench-cli --tui
+# Or with unified binary:
+make build-gui
+./build/goDnsBench --tui
 ```
 
 **GUI Development:**
 ```bash
-make dev  # Starts Wails dev server with hot reload
+# Install frontend dependencies first
+make deps-frontend
+
+# Start Wails dev server with hot reload
+make dev
 ```
 
 **Production Build:**
 ```bash
+# Build unified binary (includes GUI)
 make build-gui  # Creates optimized production binary
 ```
 
@@ -282,6 +336,7 @@ make build-gui  # Creates optimized production binary
 - `github.com/wailsapp/wails/v2` - GUI framework
 
 ### Frontend Dependencies
+- `bun` - JavaScript runtime and package manager
 - `astro` - Static site framework
 - `@astrojs/tailwind` - Tailwind integration
 - `tailwindcss` - CSS framework
@@ -340,27 +395,30 @@ Results displayed in terminal
 The following Go methods are exposed to the frontend via Wails:
 
 ### Server Management
-- `GetServers() []config.Server` - Get current server list
-- `LoadServersFromFile(path string) error` - Load from JSON/CSV
-- `AddServer(server config.Server) error` - Add custom server
+- `GetServers() []ServerDTO` - Get current server list
+- `LoadServersFromFile(filepath string) error` - Load from JSON/CSV file
+- `LoadServersFromContent(content string, fileType string) error` - Load from file content
+- `AddServer(server ServerDTO) error` - Add custom server
 - `RemoveServer(name string)` - Remove server by name
 - `ResetToDefaults()` - Reset to default servers
 - `RefreshServerList() error` - Fetch from configured URL
+- `SetSelectedServers(names []string) error` - Set selected servers for benchmarking
+- `GetSelectedServers() []string` - Get currently selected server names
 
 ### Settings
 - `GetSettings() config.Settings` - Get current settings
 - `UpdateSettings(settings config.Settings) error` - Update and save
 
 ### Benchmarking
-- `RunBenchmark(protocols []string) error` - Execute benchmark
-- `GetResults() *benchmark.BenchmarkResults` - Get last results
+- `RunBenchmark(protocols []string) error` - Execute benchmark with selected servers and protocols
+- `GetResults() *BenchmarkResultsDTO` - Get last benchmark results
 
 ### Export
 - `ExportResultsJSON(path string) error` - Export to JSON
 - `ExportResultsCSV(path string) error` - Export to CSV
 
 ### Utilities
-- `CheckServerCapabilities(server config.Server) map[string]bool` - Test protocols
+- `CheckServerCapabilities(server ServerDTO) map[string]bool` - Test which protocols a server supports
 
 ---
 
@@ -378,11 +436,15 @@ The following Go methods are exposed to the frontend via Wails:
 - [x] GUI framework (Wails + Astro)
 - [x] Export functionality (CSV/JSON)
 
-### Phase 3: Enhancement (Current)
+### Phase 3: Enhancement ✅
 - [x] Visualization (Chart.js integration)
-- [ ] Advanced filtering/sorting
-- [ ] Result history
+- [x] Server selection in GUI
+- [x] Result filtering (by server, protocol, success rate)
+- [x] Result history management
+- [x] Headless export mode (CLI flags)
+- [x] Unit tests for core packages (benchmark, config, export)
 - [ ] Custom domain configuration in UI
+- [ ] Historical result comparison UI
 
 ### Phase 4: Polish
 - [ ] Comprehensive testing
@@ -391,6 +453,27 @@ The following Go methods are exposed to the frontend via Wails:
 - [ ] Installer packages
 
 ---
+
+## Recent Updates
+
+### Unit Tests (Stage 4)
+Added comprehensive unit tests for core packages:
+- **internal/benchmark**: 17 test functions covering metrics calculations, result structures, filtering, and comparisons
+- **internal/config**: 15 test functions covering settings, server management, and JSON/CSV loading
+- **internal/export**: 8 test functions covering CSV and JSON export functionality
+- **Total**: 40+ test functions, 100+ test cases, 100% coverage of public APIs
+
+### GUI Enhancements
+- **Server Selection**: Users can select specific servers to benchmark from the GUI
+- **Result Filtering**: Filter results by server name, protocol, and minimum success rate
+- **Result History**: Save and manage benchmark result history
+- **Chart Visualizations**: Interactive latency and comparison charts using Chart.js
+- **Modular Frontend**: Refactored frontend into modular components (api/, charts/, ui/)
+
+### Headless Mode
+- Added `--export-json` and `--export-csv` flags for command-line benchmarking
+- Supports all configuration options (protocols, timeout, concurrency, server list)
+- Enables automation and integration with CI/CD pipelines
 
 ## Known Limitations
 
@@ -426,5 +509,7 @@ MIT License - See LICENSE file
 
 ---
 
-*Last Updated: December 28, 2025*
+---
+
+*Last Updated: January 2025*
 *Version: 0.1.0*

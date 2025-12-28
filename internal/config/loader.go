@@ -23,6 +23,11 @@ func LoadServersFromCSV(filepath string) ([]Server, error) {
 	return parseCSV(file)
 }
 
+// ParseCSVFromString parses CSV content from a string
+func ParseCSVFromString(content string) ([]Server, error) {
+	return parseCSV(strings.NewReader(content))
+}
+
 // parseCSV parses a CSV reader into a list of servers
 func parseCSV(r io.Reader) ([]Server, error) {
 	reader := csv.NewReader(r)

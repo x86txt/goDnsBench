@@ -4,9 +4,12 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
+	"github.com/x86txt/goDnsBench/internal/cli"
 	"github.com/x86txt/goDnsBench/internal/config"
+	"github.com/x86txt/goDnsBench/internal/export"
 	"github.com/x86txt/goDnsBench/internal/tui"
 )
 
@@ -19,8 +22,9 @@ func main() {
 	tuiMode := flag.Bool("tui", false, "Run in terminal UI mode")
 	versionFlag := flag.Bool("version", false, "Print version and exit")
 	serverFile := flag.String("servers", "", "Path to servers JSON/CSV file")
-	_ = flag.String("export-json", "", "Export results to JSON file (not yet implemented)")
-	_ = flag.String("export-csv", "", "Export results to CSV file (not yet implemented)")
+	exportJSON := flag.String("export-json", "", "Export results to JSON file (runs headless benchmark)")
+	exportCSV := flag.String("export-csv", "", "Export results to CSV file (runs headless benchmark)")
+	protocolsFlag := flag.String("protocols", "DNS,DoH,DoT,DoQ", "Comma-separated list of protocols to test (DNS,DoH,DoT,DoQ)")
 	timeout := flag.Int("timeout", 1000, "Query timeout in milliseconds")
 	concurrent := flag.Int("concurrent", 10, "Maximum concurrent servers to test")
 
@@ -61,6 +65,38 @@ func main() {
 		servers = config.DefaultServers()
 	}
 
+	// Handle export flags (headless mode)
+	if *exportJSON != "" || *exportCSV != "" {
+		// Parse protocols
+		protocols := parseProtocols(*protocolsFlag)
+
+		// Run headless benchmark
+		results, err := cli.RunHeadlessBenchmark(servers, settings, protocols)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error running benchmark: %v\n", err)
+			os.Exit(1)
+		}
+
+		// Export results
+		if *exportJSON != "" {
+			if err := export.ExportResultsJSON(results, *exportJSON); err != nil {
+				fmt.Fprintf(os.Stderr, "Error exporting JSON: %v\n", err)
+				os.Exit(1)
+			}
+			fmt.Printf("Results exported to %s\n", *exportJSON)
+		}
+
+		if *exportCSV != "" {
+			if err := export.ExportResultsCSV(results, *exportCSV); err != nil {
+				fmt.Fprintf(os.Stderr, "Error exporting CSV: %v\n", err)
+				os.Exit(1)
+			}
+			fmt.Printf("Results exported to %s\n", *exportCSV)
+		}
+
+		return
+	}
+
 	// Launch appropriate interface
 	if *tuiMode {
 		// Launch TUI
@@ -75,6 +111,28 @@ func main() {
 			os.Exit(1)
 		}
 	}
+}
+
+// parseProtocols parses a comma-separated list of protocol names
+func parseProtocols(protocolsStr string) []string {
+	if protocolsStr == "" {
+		return []string{"DNS", "DoH", "DoT", "DoQ"}
+	}
+
+	parts := strings.Split(protocolsStr, ",")
+	var protocols []string
+	for _, p := range parts {
+		p = strings.TrimSpace(p)
+		if p != "" {
+			protocols = append(protocols, p)
+		}
+	}
+
+	if len(protocols) == 0 {
+		return []string{"DNS", "DoH", "DoT", "DoQ"}
+	}
+
+	return protocols
 }
 
 // loadServersFromFile loads servers from a file (JSON or CSV based on extension)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/x86txt/goDnsBench/internal/config"
@@ -12,20 +13,20 @@ import (
 
 // BenchmarkConfig holds the configuration for a benchmark run
 type BenchmarkConfig struct {
-	Servers            []config.Server
-	Protocols          []dns.Protocol
-	Timeout            time.Duration
-	MaxConcurrent      int
-	TestDomains        TestDomains
-	ProgressCallback   func(progress Progress)
+	Servers          []config.Server
+	Protocols        []dns.Protocol
+	Timeout          time.Duration
+	MaxConcurrent    int
+	TestDomains      TestDomains
+	ProgressCallback func(progress Progress)
 }
 
 // TestDomains defines the domains to test for each query type
 type TestDomains struct {
-	A       []string
-	MX      []string
-	TXT     []string
-	DNSSEC  []string
+	A      []string
+	MX     []string
+	TXT    []string
+	DNSSEC []string
 }
 
 // DefaultTestDomains returns the default set of test domains
@@ -40,11 +41,11 @@ func DefaultTestDomains() TestDomains {
 
 // Progress represents the current progress of a benchmark run
 type Progress struct {
-	CurrentServer  string
+	CurrentServer   string
 	CurrentProtocol dns.Protocol
-	CompletedTests int
-	TotalTests     int
-	Percentage     float64
+	CompletedTests  int
+	TotalTests      int
+	Percentage      float64
 }
 
 // Runner orchestrates benchmark execution
@@ -87,21 +88,21 @@ func (r *Runner) Run(ctx context.Context) (*BenchmarkResults, error) {
 	// Mutex to protect results
 	var mu sync.Mutex
 
-	completedTests := 0
+	var completedTests atomic.Int64
 
 	// Iterate through servers and protocols
 	for _, server := range r.config.Servers {
 		for _, protocol := range r.config.Protocols {
 			// Check if server supports this protocol
 			if !r.serverSupportsProtocol(server, protocol) {
-				completedTests++
+				newCompleted := completedTests.Add(1)
 				if r.config.ProgressCallback != nil {
 					r.config.ProgressCallback(Progress{
 						CurrentServer:   server.Name,
 						CurrentProtocol: protocol,
-						CompletedTests:  completedTests,
+						CompletedTests:  int(newCompleted),
 						TotalTests:      totalTests,
-						Percentage:      float64(completedTests) / float64(totalTests) * 100,
+						Percentage:      float64(newCompleted) / float64(totalTests) * 100,
 					})
 				}
 				continue
@@ -129,17 +130,18 @@ func (r *Runner) Run(ctx context.Context) (*BenchmarkResults, error) {
 				// Store result
 				mu.Lock()
 				results.Results = append(results.Results, result)
-				completedTests++
 				mu.Unlock()
+
+				newCompleted := completedTests.Add(1)
 
 				// Report progress
 				if r.config.ProgressCallback != nil {
 					r.config.ProgressCallback(Progress{
 						CurrentServer:   srv.Name,
 						CurrentProtocol: proto,
-						CompletedTests:  completedTests,
+						CompletedTests:  int(newCompleted),
 						TotalTests:      totalTests,
-						Percentage:      float64(completedTests) / float64(totalTests) * 100,
+						Percentage:      float64(newCompleted) / float64(totalTests) * 100,
 					})
 				}
 			}(server, protocol)
