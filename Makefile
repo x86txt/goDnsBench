@@ -65,7 +65,7 @@ deps:
 ## deps-frontend: Install frontend dependencies
 deps-frontend:
 	@echo "Installing frontend dependencies..."
-	@cd frontend && npm install
+	@cd frontend && bun install
 	@echo "Frontend dependencies installed"
 
 ## fmt: Format code
