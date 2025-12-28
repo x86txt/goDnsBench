@@ -17,16 +17,26 @@ GOMOD=$(GOCMD) mod
 GOFMT=$(GOCMD) fmt
 
 # Build targets
-.PHONY: all build clean test deps fmt help tidy run-tui run-gui
+.PHONY: all build build-cli build-gui clean test deps deps-frontend fmt help tidy run-tui run-gui dev
 
-all: deps fmt build
+all: deps fmt build-gui
 
-## build: Build the binary
-build:
-	@echo "Building $(BINARY_NAME)..."
+## build: Build both CLI and GUI
+build: build-cli build-gui
+
+## build-cli: Build the CLI/TUI binary only
+build-cli:
+	@echo "Building $(BINARY_NAME) CLI..."
 	@mkdir -p $(BUILD_DIR)
-	$(GOBUILD) $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME) $(MAIN_PATH)
-	@echo "Build complete: $(BUILD_DIR)/$(BINARY_NAME)"
+	$(GOBUILD) $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-cli $(MAIN_PATH)
+	@echo "CLI build complete: $(BUILD_DIR)/$(BINARY_NAME)-cli"
+
+## build-gui: Build the GUI application with Wails
+build-gui: deps-frontend
+	@echo "Building $(BINARY_NAME) GUI with Wails..."
+	@command -v wails >/dev/null 2>&1 || { echo "Wails CLI not found. Install with: go install github.com/wailsapp/wails/v2/cmd/wails@latest"; exit 1; }
+	wails build
+	@echo "GUI build complete"
 
 ## clean: Clean build files
 clean:
@@ -40,16 +50,23 @@ test:
 	@echo "Running tests..."
 	$(GOTEST) -v ./...
 
-## deps: Download dependencies
+## deps: Download Go dependencies
 deps:
-	@echo "Downloading dependencies..."
+	@echo "Downloading Go dependencies..."
 	$(GOGET) github.com/miekg/dns
 	$(GOGET) github.com/quic-go/quic-go
 	$(GOGET) github.com/charmbracelet/bubbletea
 	$(GOGET) github.com/charmbracelet/lipgloss
 	$(GOGET) github.com/charmbracelet/bubbles
+	$(GOGET) github.com/wailsapp/wails/v2@latest
 	$(GOMOD) tidy
-	@echo "Dependencies downloaded"
+	@echo "Go dependencies downloaded"
+
+## deps-frontend: Install frontend dependencies
+deps-frontend:
+	@echo "Installing frontend dependencies..."
+	@cd frontend && npm install
+	@echo "Frontend dependencies installed"
 
 ## fmt: Format code
 fmt:
@@ -64,14 +81,20 @@ tidy:
 	@echo "Tidy complete"
 
 ## run-tui: Build and run in TUI mode
-run-tui: build
+run-tui: build-cli
 	@echo "Running in TUI mode..."
-	$(BUILD_DIR)/$(BINARY_NAME) --tui
+	$(BUILD_DIR)/$(BINARY_NAME)-cli --tui
 
 ## run-gui: Build and run in GUI mode
-run-gui: build
+run-gui: build-gui
 	@echo "Running in GUI mode..."
-	$(BUILD_DIR)/$(BINARY_NAME)
+	@./build/bin/$(BINARY_NAME) || echo "GUI binary not found. Run 'make build-gui' first"
+
+## dev: Run Wails in development mode
+dev: deps-frontend
+	@echo "Running Wails dev server..."
+	@command -v wails >/dev/null 2>&1 || { echo "Wails CLI not found. Install with: go install github.com/wailsapp/wails/v2/cmd/wails@latest"; exit 1; }
+	wails dev
 
 ## install: Install the binary to $GOPATH/bin
 install:
