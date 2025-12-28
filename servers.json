@@ -1,0 +1,76 @@
+{
+  "servers": [
+    {
+      "name": "Cloudflare Primary",
+      "dns": "1.1.1.1",
+      "doh": "https://cloudflare-dns.com/dns-query",
+      "dot": "1.1.1.1:853",
+      "doq": "1.1.1.1:8853"
+    },
+    {
+      "name": "Cloudflare Secondary",
+      "dns": "1.0.0.1",
+      "doh": "https://cloudflare-dns.com/dns-query",
+      "dot": "1.0.0.1:853",
+      "doq": "1.0.0.1:8853"
+    },
+    {
+      "name": "Google Primary",
+      "dns": "8.8.8.8",
+      "doh": "https://dns.google/dns-query",
+      "dot": "8.8.8.8:853"
+    },
+    {
+      "name": "Google Secondary",
+      "dns": "8.8.4.4",
+      "doh": "https://dns.google/dns-query",
+      "dot": "8.8.4.4:853"
+    },
+    {
+      "name": "Quad9",
+      "dns": "9.9.9.9",
+      "doh": "https://dns.quad9.net/dns-query",
+      "dot": "9.9.9.9:853"
+    },
+    {
+      "name": "OpenDNS Primary",
+      "dns": "208.67.222.222",
+      "doh": "https://doh.opendns.com/dns-query"
+    },
+    {
+      "name": "OpenDNS Secondary",
+      "dns": "208.67.220.220",
+      "doh": "https://doh.opendns.com/dns-query"
+    },
+    {
+      "name": "AdGuard DNS",
+      "dns": "94.140.14.14",
+      "doh": "https://dns.adguard.com/dns-query",
+      "dot": "94.140.14.14:853",
+      "doq": "94.140.14.14:8853"
+    },
+    {
+      "name": "NextDNS",
+      "doh": "https://dns.nextdns.io/dns-query",
+      "dot": "dns.nextdns.io:853"
+    },
+    {
+      "name": "CleanBrowsing",
+      "dns": "185.228.168.9",
+      "doh": "https://doh.cleanbrowsing.org/doh/family-filter",
+      "dot": "185.228.168.9:853"
+    },
+    {
+      "name": "Comodo Secure DNS",
+      "dns": "8.26.56.26"
+    },
+    {
+      "name": "Level3 Primary",
+      "dns": "4.2.2.1"
+    },
+    {
+      "name": "Level3 Secondary",
+      "dns": "4.2.2.2"
+    }
+  ]
+}
