@@ -2,17 +2,33 @@
 import Layout from '../layouts/Layout.astro';
 ---
 
-<Layout title="goDnsBench - DNS Benchmarking Tool">
+<Layout title="goDnsBench">
 	<div id="app" class="min-h-screen flex flex-col">
+		
 		<!-- Header -->
-		<header class="bg-light-gray border-b border-lighter-gray px-6 py-4">
-			<div class="flex items-center justify-between">
-				<div class="flex items-center space-x-3">
-					<h1 class="text-2xl font-bold text-electric-blue">goDnsBench</h1>
-					<span class="text-sm text-gray-400">DNS Benchmarking Tool</span>
+		<header class="sticky top-0 z-40 backdrop-blur-xl bg-abyss/80 border-b border-graphite/50">
+			<div class="flex items-center justify-between px-6 py-3">
+				<div class="flex items-center gap-4">
+					<!-- Logo -->
+					<div class="flex items-center gap-3">
+						<div class="w-8 h-8 rounded-lg bg-gradient-to-br from-sapphire to-azure flex items-center justify-center shadow-glow-sm">
+							<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+							</svg>
+						</div>
+						<div>
+							<h1 class="text-lg font-semibold text-snow tracking-tight">goDnsBench</h1>
+							<p class="text-xs text-mist -mt-0.5">DNS Performance Analyzer</p>
+						</div>
+					</div>
 				</div>
-				<div class="flex items-center space-x-4">
-					<button id="settings-btn" class="px-4 py-2 bg-lighter-gray hover:bg-electric-blue rounded transition">
+				
+				<div class="flex items-center gap-2">
+					<button id="settings-btn" class="flex items-center gap-2 px-3 py-1.5 text-sm text-mist hover:text-cloud hover:bg-slate/50 rounded-lg transition-all">
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+						</svg>
 						Settings
 					</button>
 				</div>
@@ -20,331 +36,402 @@ import Layout from '../layouts/Layout.astro';
 		</header>
 
 		<!-- Main Content -->
-		<main class="flex-1 flex">
+		<main class="flex-1 flex overflow-hidden">
+			
 			<!-- Sidebar -->
-			<aside class="w-80 bg-light-gray border-r border-lighter-gray p-6 overflow-y-auto">
-				<div class="space-y-6">
+			<aside class="w-72 flex flex-col border-r border-graphite/50 bg-obsidian/30">
+				<div class="flex-1 overflow-y-auto p-4 space-y-6">
+					
 					<!-- Protocol Selection -->
-					<div>
-						<h2 class="text-lg font-bold text-neon-cyan mb-3">Protocols</h2>
-						<div class="space-y-2">
-							<label class="flex items-center space-x-2 cursor-pointer">
-								<input type="checkbox" id="protocol-dns" checked class="form-checkbox text-electric-blue">
-								<span>DNS (UDP/TCP)</span>
+					<section>
+						<h2 class="text-xs font-semibold text-mist uppercase tracking-wider mb-3 flex items-center gap-2">
+							<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+							</svg>
+							Protocols
+						</h2>
+						<div class="space-y-1">
+							<label class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate/30 cursor-pointer group transition-colors">
+								<input type="checkbox" id="protocol-dns" checked>
+								<div class="flex-1">
+									<span class="text-sm text-cloud group-hover:text-snow">DNS</span>
+									<span class="text-xs text-ash ml-1.5">UDP/TCP</span>
+								</div>
+								<span class="text-[10px] font-mono text-emerald bg-emerald/10 px-1.5 py-0.5 rounded">:53</span>
 							</label>
-							<label class="flex items-center space-x-2 cursor-pointer">
-								<input type="checkbox" id="protocol-doh" checked class="form-checkbox text-electric-blue">
-								<span>DoH (HTTPS)</span>
+							<label class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate/30 cursor-pointer group transition-colors">
+								<input type="checkbox" id="protocol-doh" checked>
+								<div class="flex-1">
+									<span class="text-sm text-cloud group-hover:text-snow">DoH</span>
+									<span class="text-xs text-ash ml-1.5">HTTPS</span>
+								</div>
+								<span class="text-[10px] font-mono text-azure bg-azure/10 px-1.5 py-0.5 rounded">:443</span>
 							</label>
-							<label class="flex items-center space-x-2 cursor-pointer">
-								<input type="checkbox" id="protocol-dot" checked class="form-checkbox text-electric-blue">
-								<span>DoT (TLS)</span>
+							<label class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate/30 cursor-pointer group transition-colors">
+								<input type="checkbox" id="protocol-dot" checked>
+								<div class="flex-1">
+									<span class="text-sm text-cloud group-hover:text-snow">DoT</span>
+									<span class="text-xs text-ash ml-1.5">TLS</span>
+								</div>
+								<span class="text-[10px] font-mono text-violet bg-violet/10 px-1.5 py-0.5 rounded">:853</span>
 							</label>
-							<label class="flex items-center space-x-2 cursor-pointer">
-								<input type="checkbox" id="protocol-doq" checked class="form-checkbox text-electric-blue">
-								<span>DoQ (QUIC)</span>
+							<label class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate/30 cursor-pointer group transition-colors">
+								<input type="checkbox" id="protocol-doq" checked>
+								<div class="flex-1">
+									<span class="text-sm text-cloud group-hover:text-snow">DoQ</span>
+									<span class="text-xs text-ash ml-1.5">QUIC</span>
+								</div>
+								<span class="text-[10px] font-mono text-amber bg-amber/10 px-1.5 py-0.5 rounded">:853</span>
 							</label>
 						</div>
-					</div>
+					</section>
 
 					<!-- Server List -->
-					<div>
+					<section class="flex-1">
 						<div class="flex items-center justify-between mb-3">
-							<h2 class="text-lg font-bold text-neon-cyan">DNS Servers</h2>
-							<button id="refresh-servers-btn" class="text-sm text-electric-blue hover:text-neon-cyan">
+							<h2 class="text-xs font-semibold text-mist uppercase tracking-wider flex items-center gap-2">
+								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"/>
+								</svg>
+								Servers
+							</h2>
+							<button id="refresh-servers-btn" class="text-xs text-azure hover:text-sapphire transition-colors flex items-center gap-1">
+								<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+								</svg>
 								Refresh
 							</button>
 						</div>
-						<div id="server-list" class="space-y-1 max-h-96 overflow-y-auto">
-							<!-- Server items will be populated here -->
+						<div id="server-list" class="space-y-1 max-h-[calc(100vh-380px)] overflow-y-auto pr-1">
+							<!-- Server items populated by JS -->
 						</div>
 						<div class="mt-3 space-y-2">
-							<button id="add-server-btn" class="w-full px-4 py-2 bg-lighter-gray hover:bg-electric-blue rounded transition text-sm">
-								+ Add Server
+							<button id="add-server-btn" class="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm text-mist hover:text-cloud bg-slate/30 hover:bg-slate/50 border border-graphite/50 rounded-lg transition-all">
+								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+								</svg>
+								Add Server
 							</button>
-							<button id="import-btn" class="w-full px-4 py-2 bg-lighter-gray hover:bg-electric-blue rounded transition text-sm">
-								Import from File
+							<button id="import-btn" class="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm text-mist hover:text-cloud bg-slate/30 hover:bg-slate/50 border border-graphite/50 rounded-lg transition-all">
+								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+								</svg>
+								Import
 							</button>
 						</div>
-					</div>
+					</section>
+				</div>
 
-					<!-- Run Benchmark Button -->
-					<button id="run-benchmark-btn" class="w-full px-6 py-3 bg-electric-blue hover:bg-neon-cyan text-white font-bold rounded-lg transition shadow-lg">
-						Run Benchmark
+				<!-- Run Button -->
+				<div class="p-4 border-t border-graphite/50">
+					<button id="run-benchmark-btn" class="w-full relative group overflow-hidden px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-sapphire to-azure rounded-xl shadow-glow hover:shadow-glow-lg transition-all duration-300">
+						<span class="relative z-10 flex items-center justify-center gap-2">
+							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+							</svg>
+							Run Benchmark
+						</span>
+						<div class="absolute inset-0 bg-gradient-to-r from-azure to-sapphire opacity-0 group-hover:opacity-100 transition-opacity"></div>
 					</button>
 				</div>
 			</aside>
 
 			<!-- Results Area -->
-			<div class="flex-1 p-6 overflow-y-auto">
-				<div id="results-container" class="hidden">
-					<!-- Progress -->
-					<div id="progress-container" class="hidden mb-6">
-						<div class="bg-light-gray rounded-lg p-6">
-							<h3 class="text-lg font-bold text-neon-cyan mb-4">Running Benchmark...</h3>
-							<div class="space-y-3">
-								<div class="flex justify-between text-sm">
-									<span id="current-server">Testing...</span>
-									<span id="progress-percentage">0%</span>
-								</div>
-								<div class="w-full bg-dark-gray rounded-full h-4 overflow-hidden">
-									<div id="progress-bar" class="bg-electric-blue h-full transition-all duration-300" style="width: 0%"></div>
-								</div>
-							</div>
-						</div>
-					</div>
-
-					<!-- Results Table -->
-					<div id="results-table-container" class="hidden mb-6">
-						<div class="flex items-center justify-between mb-4">
-							<h3 class="text-lg font-bold text-neon-cyan">Results</h3>
-							<div class="flex space-x-2">
-								<button id="filter-btn" class="px-4 py-2 bg-lighter-gray hover:bg-electric-blue rounded transition text-sm">
-									Filter
-								</button>
-								<button id="export-json-btn" class="px-4 py-2 bg-lighter-gray hover:bg-electric-blue rounded transition text-sm">
-									Export JSON
-								</button>
-								<button id="export-csv-btn" class="px-4 py-2 bg-lighter-gray hover:bg-electric-blue rounded transition text-sm">
-									Export CSV
-								</button>
-							</div>
+			<div class="flex-1 overflow-y-auto">
+				
+				<!-- Welcome State -->
+				<div id="welcome-message" class="h-full flex items-center justify-center p-8">
+					<div class="text-center max-w-lg animate-fade-in">
+						<!-- Hero Icon -->
+						<div class="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-sapphire/20 to-azure/20 border border-azure/20 flex items-center justify-center shadow-glow">
+							<svg class="w-10 h-10 text-azure" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+							</svg>
 						</div>
 						
-						<!-- Filter Panel -->
-						<div id="filter-panel" class="hidden bg-light-gray rounded-lg p-4 mb-4">
-							<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-								<div>
-									<label class="block text-xs text-gray-400 mb-1">Server Name</label>
-									<input type="text" id="filter-server" placeholder="Filter by server..." class="w-full px-3 py-2 bg-dark-gray border border-lighter-gray rounded text-white text-sm">
-								</div>
-								<div>
-									<label class="block text-xs text-gray-400 mb-1">Protocol</label>
-									<select id="filter-protocol" class="w-full px-3 py-2 bg-dark-gray border border-lighter-gray rounded text-white text-sm">
-										<option value="">All Protocols</option>
-										<option value="DNS">DNS</option>
-										<option value="DoH">DoH</option>
-										<option value="DoT">DoT</option>
-										<option value="DoQ">DoQ</option>
-									</select>
-								</div>
-								<div>
-									<label class="block text-xs text-gray-400 mb-1">Min Success Rate (%)</label>
-									<input type="number" id="filter-success-rate" min="0" max="100" placeholder="0" class="w-full px-3 py-2 bg-dark-gray border border-lighter-gray rounded text-white text-sm">
-								</div>
-							</div>
-							<div class="flex justify-end mt-4">
-								<button id="clear-filters-btn" class="px-4 py-2 bg-lighter-gray hover:bg-gray-600 rounded transition text-sm mr-2">
-									Clear
-								</button>
-								<button id="apply-filters-btn" class="px-4 py-2 bg-electric-blue hover:bg-neon-cyan rounded transition text-sm">
-									Apply
-								</button>
-							</div>
-						</div>
+						<h2 class="text-2xl font-semibold text-snow mb-2">Ready to Benchmark</h2>
+						<p class="text-mist mb-8 leading-relaxed">
+							Select your protocols and DNS servers from the sidebar, then click <span class="text-azure font-medium">Run Benchmark</span> to analyze performance across multiple protocols.
+						</p>
 						
-						<div class="bg-light-gray rounded-lg overflow-hidden">
-							<table class="w-full">
-								<thead class="bg-lighter-gray">
-									<tr>
-										<th class="px-4 py-3 text-left text-sm font-semibold cursor-pointer hover:bg-lighter-gray/50" data-sort="server">Server ↕️</th>
-										<th class="px-4 py-3 text-left text-sm font-semibold cursor-pointer hover:bg-lighter-gray/50" data-sort="protocol">Protocol ↕️</th>
-										<th class="px-4 py-3 text-right text-sm font-semibold cursor-pointer hover:bg-lighter-gray/50" data-sort="min">Min (ms) ↕️</th>
-										<th class="px-4 py-3 text-right text-sm font-semibold cursor-pointer hover:bg-lighter-gray/50" data-sort="mean">Mean (ms) ↕️</th>
-										<th class="px-4 py-3 text-right text-sm font-semibold cursor-pointer hover:bg-lighter-gray/50" data-sort="p95">P95 (ms) ↕️</th>
-										<th class="px-4 py-3 text-right text-sm font-semibold cursor-pointer hover:bg-lighter-gray/50" data-sort="successRate">Success Rate ↕️</th>
-									</tr>
-								</thead>
-								<tbody id="results-tbody">
-									<!-- Results will be populated here -->
-								</tbody>
-							</table>
-						</div>
-					</div>
-
-					<!-- Visualization Charts -->
-					<div id="charts-container" class="hidden">
-						<h3 class="text-lg font-bold text-neon-cyan mb-4">Visualization</h3>
-						<div class="grid grid-cols-1 gap-6">
-							<div class="bg-light-gray rounded-lg p-6">
-								<h4 class="text-sm font-semibold mb-4 text-gray-300">Mean Latency Comparison</h4>
-								<canvas id="latency-chart"></canvas>
+						<!-- Quick Stats -->
+						<div class="grid grid-cols-3 gap-4 text-center">
+							<div class="p-4 rounded-xl bg-obsidian/50 border border-graphite/50">
+								<div class="text-2xl font-semibold text-azure font-mono" id="stat-servers">0</div>
+								<div class="text-xs text-mist mt-1">Servers</div>
 							</div>
-							<div class="bg-light-gray rounded-lg p-6">
-								<h4 class="text-sm font-semibold mb-4 text-gray-300">Protocol Comparison</h4>
-								<canvas id="protocol-comparison-chart"></canvas>
+							<div class="p-4 rounded-xl bg-obsidian/50 border border-graphite/50">
+								<div class="text-2xl font-semibold text-emerald font-mono" id="stat-protocols">4</div>
+								<div class="text-xs text-mist mt-1">Protocols</div>
 							</div>
-							<div class="bg-light-gray rounded-lg p-6">
-								<h4 class="text-sm font-semibold mb-4 text-gray-300">Top Servers by Latency</h4>
-								<canvas id="server-comparison-chart"></canvas>
-							</div>
-							<div class="bg-light-gray rounded-lg p-6">
-								<h4 class="text-sm font-semibold mb-4 text-gray-300">Success Rate Trend</h4>
-								<canvas id="success-rate-chart"></canvas>
+							<div class="p-4 rounded-xl bg-obsidian/50 border border-graphite/50">
+								<div class="text-2xl font-semibold text-violet font-mono" id="stat-queries">10</div>
+								<div class="text-xs text-mist mt-1">Queries Each</div>
 							</div>
 						</div>
 					</div>
 				</div>
 
-				<!-- Welcome Message -->
-				<div id="welcome-message" class="flex items-center justify-center h-full">
-					<div class="text-center space-y-4">
-						<h2 class="text-3xl font-bold text-electric-blue">Welcome to goDnsBench</h2>
-						<p class="text-gray-400">Select protocols and servers from the sidebar, then click "Run Benchmark" to start</p>
+				<!-- Results Container -->
+				<div id="results-container" class="hidden p-6 space-y-6">
+					
+					<!-- Progress Section -->
+					<div id="progress-container" class="hidden animate-fade-in">
+						<div class="bg-obsidian/50 rounded-2xl border border-graphite/50 p-6 shadow-card">
+							<div class="flex items-center justify-between mb-4">
+								<h3 class="text-lg font-semibold text-snow flex items-center gap-2">
+									<div class="w-2 h-2 bg-azure rounded-full animate-pulse"></div>
+									Running Benchmark
+								</h3>
+								<span id="progress-percentage" class="text-sm font-mono text-azure">0%</span>
+							</div>
+							<div class="space-y-3">
+								<div class="flex items-center justify-between text-sm">
+									<span id="current-server" class="text-mist">Initializing...</span>
+									<span id="current-protocol" class="text-xs font-mono text-ash px-2 py-0.5 bg-slate/50 rounded">-</span>
+								</div>
+								<div class="relative h-2 bg-slate rounded-full overflow-hidden">
+									<div id="progress-bar" class="absolute inset-y-0 left-0 bg-gradient-to-r from-sapphire to-azure rounded-full transition-all duration-300 ease-out" style="width: 0%"></div>
+									<div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse"></div>
+								</div>
+								<div class="flex items-center justify-between text-xs text-ash">
+									<span id="progress-tests">0 / 0 tests</span>
+									<span id="progress-eta">Calculating...</span>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Results Table Section -->
+					<div id="results-table-container" class="hidden animate-slide-up">
+						<div class="bg-obsidian/50 rounded-2xl border border-graphite/50 overflow-hidden shadow-card">
+							
+							<!-- Table Header -->
+							<div class="flex items-center justify-between px-6 py-4 border-b border-graphite/50">
+								<h3 class="text-lg font-semibold text-snow">Results</h3>
+								<div class="flex items-center gap-2">
+									<button id="filter-btn" class="flex items-center gap-1.5 px-3 py-1.5 text-sm text-mist hover:text-cloud hover:bg-slate/50 rounded-lg transition-all">
+										<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+										</svg>
+										Filter
+									</button>
+									<div class="w-px h-4 bg-graphite"></div>
+									<button id="export-json-btn" class="flex items-center gap-1.5 px-3 py-1.5 text-sm text-mist hover:text-cloud hover:bg-slate/50 rounded-lg transition-all">
+										<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+										</svg>
+										JSON
+									</button>
+									<button id="export-csv-btn" class="flex items-center gap-1.5 px-3 py-1.5 text-sm text-mist hover:text-cloud hover:bg-slate/50 rounded-lg transition-all">
+										<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+										</svg>
+										CSV
+									</button>
+								</div>
+							</div>
+
+							<!-- Filter Panel -->
+							<div id="filter-panel" class="hidden border-b border-graphite/50 p-4 bg-slate/20">
+								<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+									<div>
+										<label class="block text-xs font-medium text-mist mb-1.5">Server</label>
+										<input type="text" id="filter-server" placeholder="Filter by name..." class="w-full px-3 py-2 text-sm bg-obsidian border border-graphite rounded-lg text-cloud placeholder-ash focus:border-azure focus:outline-none">
+									</div>
+									<div>
+										<label class="block text-xs font-medium text-mist mb-1.5">Protocol</label>
+										<select id="filter-protocol" class="w-full px-3 py-2 text-sm bg-obsidian border border-graphite rounded-lg text-cloud focus:border-azure focus:outline-none">
+											<option value="">All Protocols</option>
+											<option value="DNS">DNS</option>
+											<option value="DoH">DoH</option>
+											<option value="DoT">DoT</option>
+											<option value="DoQ">DoQ</option>
+										</select>
+									</div>
+									<div>
+										<label class="block text-xs font-medium text-mist mb-1.5">Min Success Rate</label>
+										<input type="number" id="filter-success-rate" min="0" max="100" placeholder="0%" class="w-full px-3 py-2 text-sm bg-obsidian border border-graphite rounded-lg text-cloud placeholder-ash focus:border-azure focus:outline-none">
+									</div>
+									<div class="flex items-end gap-2">
+										<button id="apply-filters-btn" class="flex-1 px-4 py-2 text-sm font-medium text-white bg-azure hover:bg-sapphire rounded-lg transition-colors">
+											Apply
+										</button>
+										<button id="clear-filters-btn" class="px-4 py-2 text-sm text-mist hover:text-cloud bg-slate/50 hover:bg-slate rounded-lg transition-colors">
+											Clear
+										</button>
+									</div>
+								</div>
+							</div>
+
+							<!-- Table -->
+							<div class="overflow-x-auto">
+								<table class="w-full">
+									<thead>
+										<tr class="bg-slate/30">
+											<th class="px-6 py-3 text-left text-xs font-semibold text-mist uppercase tracking-wider cursor-pointer hover:bg-slate/50 transition-colors" data-sort="server">
+												<span class="flex items-center gap-1">Server <span class="text-ash">↕</span></span>
+											</th>
+											<th class="px-4 py-3 text-left text-xs font-semibold text-mist uppercase tracking-wider cursor-pointer hover:bg-slate/50 transition-colors" data-sort="protocol">
+												<span class="flex items-center gap-1">Protocol <span class="text-ash">↕</span></span>
+											</th>
+											<th class="px-4 py-3 text-right text-xs font-semibold text-mist uppercase tracking-wider cursor-pointer hover:bg-slate/50 transition-colors" data-sort="min">
+												<span class="flex items-center justify-end gap-1">Min <span class="text-ash">↕</span></span>
+											</th>
+											<th class="px-4 py-3 text-right text-xs font-semibold text-mist uppercase tracking-wider cursor-pointer hover:bg-slate/50 transition-colors" data-sort="mean">
+												<span class="flex items-center justify-end gap-1">Mean <span class="text-ash">↕</span></span>
+											</th>
+											<th class="px-4 py-3 text-right text-xs font-semibold text-mist uppercase tracking-wider cursor-pointer hover:bg-slate/50 transition-colors" data-sort="p95">
+												<span class="flex items-center justify-end gap-1">P95 <span class="text-ash">↕</span></span>
+											</th>
+											<th class="px-4 py-3 text-right text-xs font-semibold text-mist uppercase tracking-wider cursor-pointer hover:bg-slate/50 transition-colors" data-sort="successRate">
+												<span class="flex items-center justify-end gap-1">Success <span class="text-ash">↕</span></span>
+											</th>
+										</tr>
+									</thead>
+									<tbody id="results-tbody" class="divide-y divide-graphite/30">
+										<!-- Results populated by JS -->
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+
+					<!-- Charts Section -->
+					<div id="charts-container" class="hidden animate-slide-up">
+						<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+							<div class="bg-obsidian/50 rounded-2xl border border-graphite/50 p-6 shadow-card">
+								<h4 class="text-sm font-semibold text-cloud mb-4 flex items-center gap-2">
+									<div class="w-2 h-2 bg-azure rounded-full"></div>
+									Mean Latency by Server
+								</h4>
+								<canvas id="latency-chart" class="w-full"></canvas>
+							</div>
+							<div class="bg-obsidian/50 rounded-2xl border border-graphite/50 p-6 shadow-card">
+								<h4 class="text-sm font-semibold text-cloud mb-4 flex items-center gap-2">
+									<div class="w-2 h-2 bg-violet rounded-full"></div>
+									Protocol Comparison
+								</h4>
+								<canvas id="protocol-comparison-chart" class="w-full"></canvas>
+							</div>
+							<div class="bg-obsidian/50 rounded-2xl border border-graphite/50 p-6 shadow-card">
+								<h4 class="text-sm font-semibold text-cloud mb-4 flex items-center gap-2">
+									<div class="w-2 h-2 bg-emerald rounded-full"></div>
+									Top 10 Fastest Servers
+								</h4>
+								<canvas id="server-comparison-chart" class="w-full"></canvas>
+							</div>
+							<div class="bg-obsidian/50 rounded-2xl border border-graphite/50 p-6 shadow-card">
+								<h4 class="text-sm font-semibold text-cloud mb-4 flex items-center gap-2">
+									<div class="w-2 h-2 bg-amber rounded-full"></div>
+									Success Rate Distribution
+								</h4>
+								<canvas id="success-rate-chart" class="w-full"></canvas>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
 		</main>
 	</div>
 
-	<!-- Hidden file input for server import -->
+	<!-- Hidden file input -->
 	<input type="file" id="import-file-input" accept=".json,.csv" class="hidden" />
 
 	<!-- Settings Modal -->
-	<div id="settings-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-		<div class="bg-light-gray rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-lighter-gray">
-			<div class="flex items-center justify-between mb-6">
-				<h2 class="text-2xl font-bold text-neon-cyan">Settings</h2>
-				<button id="settings-close-btn" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+	<div id="settings-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+		<div class="absolute inset-0 bg-void/80 backdrop-blur-sm" id="settings-backdrop"></div>
+		<div class="relative w-full max-w-xl mx-4 bg-obsidian rounded-2xl border border-graphite shadow-2xl overflow-hidden animate-slide-up">
+			
+			<!-- Modal Header -->
+			<div class="flex items-center justify-between px-6 py-4 border-b border-graphite/50">
+				<h2 class="text-xl font-semibold text-snow">Settings</h2>
+				<button id="settings-close-btn" class="p-1 text-mist hover:text-cloud hover:bg-slate/50 rounded-lg transition-all">
+					<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+					</svg>
+				</button>
 			</div>
 
-			<div class="space-y-6">
-				<!-- Timeout -->
-				<div>
-					<label for="settings-timeout" class="block text-sm font-semibold text-gray-300 mb-2">
-						Query Timeout (milliseconds)
-					</label>
-					<input
-						type="number"
-						id="settings-timeout"
-						min="100"
-						max="10000"
-						step="100"
-						value="1000"
-						class="w-full px-4 py-2 bg-dark-gray border border-lighter-gray rounded text-white focus:outline-none focus:border-electric-blue"
-					/>
-				</div>
+			<!-- Modal Body -->
+			<div class="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+				
+				<!-- Performance Settings -->
+				<section>
+					<h3 class="text-sm font-semibold text-mist uppercase tracking-wider mb-4">Performance</h3>
+					<div class="grid grid-cols-2 gap-4">
+						<div>
+							<label for="settings-timeout" class="block text-sm text-cloud mb-2">Query Timeout</label>
+							<div class="relative">
+								<input type="number" id="settings-timeout" min="100" max="10000" step="100" value="1000" class="w-full px-4 py-2.5 pr-12 text-sm bg-abyss border border-graphite rounded-xl text-cloud focus:border-azure focus:outline-none font-mono">
+								<span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-ash">ms</span>
+							</div>
+						</div>
+						<div>
+							<label for="settings-concurrency" class="block text-sm text-cloud mb-2">Max Concurrent</label>
+							<input type="number" id="settings-concurrency" min="1" max="50" value="10" class="w-full px-4 py-2.5 text-sm bg-abyss border border-graphite rounded-xl text-cloud focus:border-azure focus:outline-none font-mono">
+						</div>
+					</div>
+				</section>
 
-				<!-- Concurrency -->
-				<div>
-					<label for="settings-concurrency" class="block text-sm font-semibold text-gray-300 mb-2">
-						Max Concurrent Servers
-					</label>
-					<input
-						type="number"
-						id="settings-concurrency"
-						min="1"
-						max="50"
-						value="10"
-						class="w-full px-4 py-2 bg-dark-gray border border-lighter-gray rounded text-white focus:outline-none focus:border-electric-blue"
-					/>
-				</div>
-
-				<!-- Protocols -->
-				<div>
-					<label class="block text-sm font-semibold text-gray-300 mb-2">
-						Enabled Protocols
-					</label>
-					<div class="space-y-2">
-						<label class="flex items-center space-x-2 cursor-pointer">
-							<input type="checkbox" id="settings-protocol-dns" checked class="form-checkbox text-electric-blue">
-							<span>DNS (UDP/TCP)</span>
+				<!-- Enabled Protocols -->
+				<section>
+					<h3 class="text-sm font-semibold text-mist uppercase tracking-wider mb-4">Default Protocols</h3>
+					<div class="grid grid-cols-2 gap-2">
+						<label class="flex items-center gap-3 p-3 rounded-xl bg-abyss border border-graphite hover:border-graphite cursor-pointer group">
+							<input type="checkbox" id="settings-protocol-dns" checked>
+							<span class="text-sm text-cloud">DNS (UDP/TCP)</span>
 						</label>
-						<label class="flex items-center space-x-2 cursor-pointer">
-							<input type="checkbox" id="settings-protocol-doh" checked class="form-checkbox text-electric-blue">
-							<span>DoH (HTTPS)</span>
+						<label class="flex items-center gap-3 p-3 rounded-xl bg-abyss border border-graphite hover:border-graphite cursor-pointer group">
+							<input type="checkbox" id="settings-protocol-doh" checked>
+							<span class="text-sm text-cloud">DoH (HTTPS)</span>
 						</label>
-						<label class="flex items-center space-x-2 cursor-pointer">
-							<input type="checkbox" id="settings-protocol-dot" checked class="form-checkbox text-electric-blue">
-							<span>DoT (TLS)</span>
+						<label class="flex items-center gap-3 p-3 rounded-xl bg-abyss border border-graphite hover:border-graphite cursor-pointer group">
+							<input type="checkbox" id="settings-protocol-dot" checked>
+							<span class="text-sm text-cloud">DoT (TLS)</span>
 						</label>
-						<label class="flex items-center space-x-2 cursor-pointer">
-							<input type="checkbox" id="settings-protocol-doq" checked class="form-checkbox text-electric-blue">
-							<span>DoQ (QUIC)</span>
+						<label class="flex items-center gap-3 p-3 rounded-xl bg-abyss border border-graphite hover:border-graphite cursor-pointer group">
+							<input type="checkbox" id="settings-protocol-doq" checked>
+							<span class="text-sm text-cloud">DoQ (QUIC)</span>
 						</label>
 					</div>
-				</div>
+				</section>
 
 				<!-- Test Domains -->
-				<div>
-					<label class="block text-sm font-semibold text-gray-300 mb-2">
-						Test Domains
-					</label>
+				<section>
+					<h3 class="text-sm font-semibold text-mist uppercase tracking-wider mb-4">Test Domains</h3>
 					<div class="space-y-4">
 						<div>
-							<label for="settings-domains-a" class="block text-xs text-gray-400 mb-1">
-								A Records (one per line)
-							</label>
-							<textarea
-								id="settings-domains-a"
-								rows="3"
-								class="w-full px-4 py-2 bg-dark-gray border border-lighter-gray rounded text-white text-sm focus:outline-none focus:border-electric-blue font-mono"
-								placeholder="google.com&#10;cloudflare.com&#10;amazon.com"
-							></textarea>
+							<label for="settings-domains-a" class="block text-sm text-cloud mb-2">A Records</label>
+							<textarea id="settings-domains-a" rows="2" class="w-full px-4 py-2.5 text-sm bg-abyss border border-graphite rounded-xl text-cloud focus:border-azure focus:outline-none font-mono resize-none" placeholder="google.com&#10;cloudflare.com"></textarea>
 						</div>
 						<div>
-							<label for="settings-domains-mx" class="block text-xs text-gray-400 mb-1">
-								MX Records (one per line)
-							</label>
-							<textarea
-								id="settings-domains-mx"
-								rows="2"
-								class="w-full px-4 py-2 bg-dark-gray border border-lighter-gray rounded text-white text-sm focus:outline-none focus:border-electric-blue font-mono"
-								placeholder="gmail.com&#10;microsoft.com"
-							></textarea>
+							<label for="settings-domains-mx" class="block text-sm text-cloud mb-2">MX Records</label>
+							<textarea id="settings-domains-mx" rows="2" class="w-full px-4 py-2.5 text-sm bg-abyss border border-graphite rounded-xl text-cloud focus:border-azure focus:outline-none font-mono resize-none" placeholder="gmail.com&#10;microsoft.com"></textarea>
 						</div>
 						<div>
-							<label for="settings-domains-txt" class="block text-xs text-gray-400 mb-1">
-								TXT Records (one per line)
-							</label>
-							<textarea
-								id="settings-domains-txt"
-								rows="2"
-								class="w-full px-4 py-2 bg-dark-gray border border-lighter-gray rounded text-white text-sm focus:outline-none focus:border-electric-blue font-mono"
-								placeholder="_dmarc.google.com&#10;google.com"
-							></textarea>
+							<label for="settings-domains-txt" class="block text-sm text-cloud mb-2">TXT Records</label>
+							<textarea id="settings-domains-txt" rows="2" class="w-full px-4 py-2.5 text-sm bg-abyss border border-graphite rounded-xl text-cloud focus:border-azure focus:outline-none font-mono resize-none" placeholder="_dmarc.google.com"></textarea>
 						</div>
 						<div>
-							<label for="settings-domains-dnssec" class="block text-xs text-gray-400 mb-1">
-								DNSSEC Domains (one per line)
-							</label>
-							<textarea
-								id="settings-domains-dnssec"
-								rows="2"
-								class="w-full px-4 py-2 bg-dark-gray border border-lighter-gray rounded text-white text-sm focus:outline-none focus:border-electric-blue font-mono"
-								placeholder="cloudflare.com&#10;google.com"
-							></textarea>
+							<label for="settings-domains-dnssec" class="block text-sm text-cloud mb-2">DNSSEC</label>
+							<textarea id="settings-domains-dnssec" rows="2" class="w-full px-4 py-2.5 text-sm bg-abyss border border-graphite rounded-xl text-cloud focus:border-azure focus:outline-none font-mono resize-none" placeholder="cloudflare.com"></textarea>
 						</div>
 					</div>
-				</div>
+				</section>
+			</div>
 
-				<!-- Buttons -->
-				<div class="flex justify-end space-x-3 pt-4 border-t border-lighter-gray">
-					<button id="settings-cancel-btn" class="px-6 py-2 bg-lighter-gray hover:bg-gray-600 rounded transition">
-						Cancel
-					</button>
-					<button id="settings-save-btn" class="px-6 py-2 bg-electric-blue hover:bg-neon-cyan text-white font-semibold rounded transition">
-						Save
-					</button>
-				</div>
+			<!-- Modal Footer -->
+			<div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-graphite/50 bg-slate/20">
+				<button id="settings-cancel-btn" class="px-5 py-2 text-sm text-mist hover:text-cloud hover:bg-slate/50 rounded-xl transition-all">
+					Cancel
+				</button>
+				<button id="settings-save-btn" class="px-5 py-2 text-sm font-medium text-white bg-azure hover:bg-sapphire rounded-xl transition-colors">
+					Save Changes
+				</button>
 			</div>
 		</div>
 	</div>
 
 	<script src="../scripts/init.ts"></script>
 </Layout>
-
-<style is:global>
-	.form-checkbox {
-		width: 1.25rem;
-		height: 1.25rem;
-		border-radius: 0.25rem;
-		border-color: #4b5563;
-		background-color: #1e1e1e;
-	}
-
-	.form-checkbox:checked {
-		background-color: #0066ff;
-		border-color: #0066ff;
-	}
-</style>

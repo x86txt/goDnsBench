@@ -13,6 +13,85 @@ import (
 	"github.com/x86txt/goDnsBench/internal/dns"
 )
 
+// Theme colors - Deep space aesthetic
+var (
+	colorPrimary   = lipgloss.Color("#58a6ff")
+	colorSecondary = lipgloss.Color("#a371f7")
+	colorSuccess   = lipgloss.Color("#3fb950")
+	colorWarning   = lipgloss.Color("#d29922")
+	colorError     = lipgloss.Color("#f85149")
+	colorMuted     = lipgloss.Color("#8b949e")
+	colorDim       = lipgloss.Color("#484f58")
+	colorBg        = lipgloss.Color("#0d1117")
+	colorBgAlt     = lipgloss.Color("#161b22")
+	colorBorder    = lipgloss.Color("#30363d")
+	colorText      = lipgloss.Color("#c9d1d9")
+	colorTextBright = lipgloss.Color("#f0f6fc")
+)
+
+// Styles
+var (
+	// Base styles
+	styleTitle = lipgloss.NewStyle().
+		Bold(true).
+		Foreground(colorTextBright).
+		Background(colorPrimary).
+		Padding(0, 2)
+
+	styleSubtitle = lipgloss.NewStyle().
+		Foreground(colorMuted).
+		Italic(true)
+
+	styleBox = lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(colorBorder).
+		Padding(1, 2)
+
+	styleHighlight = lipgloss.NewStyle().
+		Foreground(colorPrimary).
+		Bold(true)
+
+	styleSuccess = lipgloss.NewStyle().
+		Foreground(colorSuccess)
+
+	styleWarning = lipgloss.NewStyle().
+		Foreground(colorWarning)
+
+	styleError = lipgloss.NewStyle().
+		Foreground(colorError)
+
+	styleMuted = lipgloss.NewStyle().
+		Foreground(colorMuted)
+
+	styleDim = lipgloss.NewStyle().
+		Foreground(colorDim)
+
+	styleKey = lipgloss.NewStyle().
+		Foreground(colorPrimary).
+		Bold(true).
+		Padding(0, 1).
+		Background(lipgloss.Color("#21262d"))
+
+	styleValue = lipgloss.NewStyle().
+		Foreground(colorText)
+
+	styleTableHeader = lipgloss.NewStyle().
+		Bold(true).
+		Foreground(colorTextBright).
+		Background(lipgloss.Color("#21262d")).
+		Padding(0, 1)
+
+	styleTableCell = lipgloss.NewStyle().
+		Foreground(colorText).
+		Padding(0, 1)
+
+	styleProgressBar = lipgloss.NewStyle().
+		Foreground(colorPrimary)
+
+	styleProgressTrack = lipgloss.NewStyle().
+		Foreground(colorDim)
+)
+
 // Screen represents different screens in the TUI
 type Screen int
 
@@ -32,14 +111,15 @@ type Model struct {
 	err           error
 	width         int
 	height        int
-	
+
 	// Progress tracking
-	progress      benchmark.Progress
-	isRunning     bool
-	
+	progress  benchmark.Progress
+	isRunning bool
+	startTime time.Time
+
 	// Benchmark state
-	progressChan  chan benchmark.Progress
-	doneChan      chan benchmarkDoneMsg
+	progressChan chan benchmark.Progress
+	doneChan     chan benchmarkDoneMsg
 }
 
 // NewModel creates a new TUI model
@@ -71,10 +151,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c", "q":
-			if m.isRunning {
-				// Allow quit even when running
-				return m, tea.Quit
-			}
 			return m, tea.Quit
 		case "s":
 			if m.currentScreen == ScreenMain && !m.isRunning {
@@ -84,11 +160,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.currentScreen == ScreenMain && !m.isRunning {
 				m.currentScreen = ScreenRunning
 				m.isRunning = true
+				m.startTime = time.Now()
 				m.progress = benchmark.Progress{}
-				// Initialize channels
 				m.progressChan = make(chan benchmark.Progress, 10)
 				m.doneChan = make(chan benchmarkDoneMsg, 1)
-				// Start benchmark and progress polling
 				return m, tea.Batch(
 					runBenchmark(m.servers, m.settings, m.progressChan, m.doneChan),
 					waitForProgress(m.progressChan, m.doneChan),
@@ -105,7 +180,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 
 	case progressTickMsg:
-		// Ticker fired, check for updates
 		if m.isRunning && m.progressChan != nil && m.doneChan != nil {
 			return m, tea.Batch(
 				checkProgress(m.progressChan, m.doneChan),
@@ -116,7 +190,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case benchmarkProgressMsg:
 		m.progress = benchmark.Progress(msg)
-		// Continue polling for more updates if still running
 		if m.isRunning && m.progressChan != nil && m.doneChan != nil {
 			return m, waitForProgress(m.progressChan, m.doneChan)
 		}
@@ -131,7 +204,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.results = msg.results
 			m.currentScreen = ScreenResults
 		}
-		// Clean up channels
 		if m.progressChan != nil {
 			close(m.progressChan)
 			m.progressChan = nil
@@ -164,163 +236,303 @@ func (m Model) View() string {
 
 // viewMain renders the main menu
 func (m Model) viewMain() string {
-	titleStyle := lipgloss.NewStyle().
+	width := m.width
+	if width < 60 {
+		width = 60
+	}
+	if width > 100 {
+		width = 100
+	}
+
+	// Logo/Header
+	logo := `
+   ██████╗  ██████╗ ██████╗ ███╗   ██╗███████╗██████╗ ███████╗███╗   ██╗ ██████╗██╗  ██╗
+  ██╔════╝ ██╔═══██╗██╔══██╗████╗  ██║██╔════╝██╔══██╗██╔════╝████╗  ██║██╔════╝██║  ██║
+  ██║  ███╗██║   ██║██║  ██║██╔██╗ ██║███████╗██████╔╝█████╗  ██╔██╗ ██║██║     ███████║
+  ██║   ██║██║   ██║██║  ██║██║╚██╗██║╚════██║██╔══██╗██╔══╝  ██║╚██╗██║██║     ██╔══██║
+  ╚██████╔╝╚██████╔╝██████╔╝██║ ╚████║███████║██████╔╝███████╗██║ ╚████║╚██████╗██║  ██║
+   ╚═════╝  ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝╚═════╝ ╚══════╝╚═╝  ╚═══╝ ╚═════╝╚═╝  ╚═╝`
+
+	logoStyled := lipgloss.NewStyle().
+		Foreground(colorPrimary).
 		Bold(true).
-		Foreground(lipgloss.Color("#0066ff")).
-		MarginBottom(1)
+		Render(logo)
 
-	menuStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#00ffff"))
+	subtitle := styleMuted.Render("                           DNS Performance Analyzer • v0.1.0")
 
-	title := titleStyle.Render("goDnsBench - DNS Benchmarking Tool")
+	// Divider
+	divider := styleDim.Render(strings.Repeat("─", width))
 
-	menu := menuStyle.Render(fmt.Sprintf(`
-Loaded %d DNS servers
+	// Stats box
+	statsBox := m.renderStatsBox(width)
 
-Commands:
-  [r] Run benchmark
-  [s] Settings
-  [q] Quit
+	// Menu
+	menuItems := []struct {
+		key  string
+		desc string
+	}{
+		{"r", "Run Benchmark"},
+		{"s", "Settings"},
+		{"q", "Quit"},
+	}
 
-Press a key to continue...
-`, len(m.servers)))
+	var menuLines []string
+	menuLines = append(menuLines, "")
+	menuLines = append(menuLines, styleHighlight.Render("  ⚡ Commands"))
+	menuLines = append(menuLines, "")
+	for _, item := range menuItems {
+		line := fmt.Sprintf("     %s  %s",
+			styleKey.Render(item.key),
+			styleValue.Render(item.desc))
+		menuLines = append(menuLines, line)
+	}
+	menuLines = append(menuLines, "")
 
-	return title + "\n" + menu
+	menu := strings.Join(menuLines, "\n")
+
+	// Error display
+	errorMsg := ""
+	if m.err != nil {
+		errorMsg = "\n" + styleError.Render("  ⚠ Error: "+m.err.Error()) + "\n"
+	}
+
+	// Combine all
+	content := strings.Join([]string{
+		"",
+		logoStyled,
+		subtitle,
+		"",
+		divider,
+		statsBox,
+		divider,
+		menu,
+		errorMsg,
+	}, "\n")
+
+	return content
+}
+
+// renderStatsBox renders a statistics box
+func (m Model) renderStatsBox(width int) string {
+	serverCount := len(m.servers)
+	protocolCount := len(m.settings.EnabledProtocols)
+	queriesPerServer := 10 // Fixed in the app
+
+	// Create stat items
+	stat1 := fmt.Sprintf("  %s %s",
+		styleHighlight.Render(fmt.Sprintf("%d", serverCount)),
+		styleMuted.Render("Servers"))
+
+	stat2 := fmt.Sprintf("  %s %s",
+		styleSuccess.Render(fmt.Sprintf("%d", protocolCount)),
+		styleMuted.Render("Protocols"))
+
+	stat3 := fmt.Sprintf("  %s %s",
+		lipgloss.NewStyle().Foreground(colorSecondary).Render(fmt.Sprintf("%d", queriesPerServer)),
+		styleMuted.Render("Queries/Server"))
+
+	totalTests := serverCount * protocolCount * queriesPerServer
+	stat4 := fmt.Sprintf("  %s %s",
+		styleWarning.Render(fmt.Sprintf("%d", totalTests)),
+		styleMuted.Render("Total Queries"))
+
+	return fmt.Sprintf("\n%s    │    %s    │    %s    │    %s\n", stat1, stat2, stat3, stat4)
 }
 
 // viewSettings renders the settings screen
 func (m Model) viewSettings() string {
-	titleStyle := lipgloss.NewStyle().
-		Bold(true).
-		Foreground(lipgloss.Color("#0066ff")).
-		MarginBottom(1)
+	title := styleTitle.Render(" ⚙ Settings ")
 
-	title := titleStyle.Render("Settings")
+	var lines []string
+	lines = append(lines, "")
+	lines = append(lines, title)
+	lines = append(lines, "")
 
-	content := fmt.Sprintf(`
-Query Timeout: %v
-Max Concurrent: %d
-Enabled Protocols: %v
+	// Settings display
+	settings := []struct {
+		label string
+		value string
+	}{
+		{"Query Timeout", fmt.Sprintf("%v", m.settings.QueryTimeout)},
+		{"Max Concurrent", fmt.Sprintf("%d servers", m.settings.MaxConcurrent)},
+		{"Protocols", strings.Join(m.settings.EnabledProtocols, ", ")},
+	}
 
-[esc] Back to main menu
-`, m.settings.QueryTimeout, m.settings.MaxConcurrent, m.settings.EnabledProtocols)
+	for _, s := range settings {
+		line := fmt.Sprintf("  %s: %s",
+			styleMuted.Render(s.label),
+			styleValue.Render(s.value))
+		lines = append(lines, line)
+	}
 
-	return title + "\n" + content
+	lines = append(lines, "")
+	lines = append(lines, styleDim.Render("  ───────────────────────────────────"))
+	lines = append(lines, "")
+	lines = append(lines, fmt.Sprintf("  %s Back to main menu", styleKey.Render("esc")))
+	lines = append(lines, "")
+
+	return strings.Join(lines, "\n")
 }
 
 // viewResults renders the results screen
 func (m Model) viewResults() string {
 	if m.results == nil {
-		return "No results available"
+		return styleMuted.Render("No results available")
 	}
 
-	titleStyle := lipgloss.NewStyle().
-		Bold(true).
-		Foreground(lipgloss.Color("#0066ff")).
-		MarginBottom(1)
+	title := styleTitle.Render(" 📊 Benchmark Results ")
 
-	headerStyle := lipgloss.NewStyle().
-		Bold(true).
-		Foreground(lipgloss.Color("#00ffff")).
-		Padding(0, 1)
+	var lines []string
+	lines = append(lines, "")
+	lines = append(lines, title)
+	lines = append(lines, "")
 
-	cellStyle := lipgloss.NewStyle().
-		Padding(0, 1)
+	// Summary stats
+	duration := m.results.Duration()
+	resultCount := len(m.results.Results)
 
-	title := titleStyle.Render("Benchmark Results")
-
-	// Summary
-	summary := fmt.Sprintf(`
-Duration: %v
-Total Results: %d
-
-`, m.results.Duration(), len(m.results.Results))
+	summaryLine := fmt.Sprintf("  Completed %s tests in %s",
+		styleHighlight.Render(fmt.Sprintf("%d", resultCount)),
+		styleSuccess.Render(duration.Round(time.Millisecond).String()))
+	lines = append(lines, summaryLine)
+	lines = append(lines, "")
 
 	// Table header
-	header := headerStyle.Render(fmt.Sprintf("%-20s %-6s %-8s %-8s %-8s %-8s %-8s",
-		"Server", "Proto", "Min(ms)", "Mean(ms)", "P95(ms)", "P99(ms)", "Success%"))
+	headerFormat := "  %-22s %-6s %10s %10s %10s %10s"
+	header := fmt.Sprintf(headerFormat, "SERVER", "PROTO", "MIN", "MEAN", "P95", "SUCCESS")
+	lines = append(lines, styleTableHeader.Render(header))
+	lines = append(lines, styleDim.Render("  "+strings.Repeat("─", 74)))
 
 	// Table rows
-	var rows []string
 	for _, result := range m.results.Results {
 		serverName := result.ServerName
-		if len(serverName) > 20 {
-			serverName = serverName[:17] + "..."
+		if len(serverName) > 22 {
+			serverName = serverName[:19] + "..."
 		}
-		
+
 		protocol := result.Protocol.String()
 		minMs := result.Metrics.Min.Seconds() * 1000
 		meanMs := result.Metrics.Mean.Seconds() * 1000
 		p95Ms := result.Metrics.P95.Seconds() * 1000
-		p99Ms := result.Metrics.P99.Seconds() * 1000
 		successRate := result.Metrics.SuccessRate()
 
-		row := cellStyle.Render(fmt.Sprintf("%-20s %-6s %8.2f %8.2f %8.2f %8.2f %7.1f%%",
-			serverName, protocol, minMs, meanMs, p95Ms, p99Ms, successRate))
-		rows = append(rows, row)
+		// Color code the latency
+		meanStyle := styleValue
+		if meanMs < 50 {
+			meanStyle = styleSuccess
+		} else if meanMs < 100 {
+			meanStyle = styleWarning
+		} else {
+			meanStyle = styleError
+		}
+
+		// Color code success rate
+		successStyle := styleSuccess
+		if successRate < 100 {
+			successStyle = styleWarning
+		}
+		if successRate < 50 {
+			successStyle = styleError
+		}
+
+		// Protocol badge color
+		protoStyle := styleMuted
+		switch result.Protocol {
+		case dns.ProtocolDNS:
+			protoStyle = styleSuccess
+		case dns.ProtocolDoH:
+			protoStyle = lipgloss.NewStyle().Foreground(colorPrimary)
+		case dns.ProtocolDoT:
+			protoStyle = lipgloss.NewStyle().Foreground(colorSecondary)
+		case dns.ProtocolDoQ:
+			protoStyle = styleWarning
+		}
+
+		row := fmt.Sprintf("  %-22s %s %10s %s %10s %s",
+			styleValue.Render(serverName),
+			protoStyle.Render(fmt.Sprintf("%-6s", protocol)),
+			styleMuted.Render(fmt.Sprintf("%.1fms", minMs)),
+			meanStyle.Render(fmt.Sprintf("%10s", fmt.Sprintf("%.1fms", meanMs))),
+			styleMuted.Render(fmt.Sprintf("%.1fms", p95Ms)),
+			successStyle.Render(fmt.Sprintf("%9.0f%%", successRate)))
+		lines = append(lines, row)
 	}
 
-	table := header + "\n" + strings.Repeat("-", 80) + "\n" + strings.Join(rows, "\n")
+	lines = append(lines, "")
+	lines = append(lines, styleDim.Render("  "+strings.Repeat("─", 74)))
+	lines = append(lines, "")
+	lines = append(lines, fmt.Sprintf("  %s Back to main menu", styleKey.Render("esc")))
+	lines = append(lines, "")
 
-	content := summary + table + "\n\n[esc] Back to main menu"
-
-	return title + "\n" + content
+	return strings.Join(lines, "\n")
 }
 
 // viewRunning renders the running benchmark screen
 func (m Model) viewRunning() string {
-	titleStyle := lipgloss.NewStyle().
-		Bold(true).
-		Foreground(lipgloss.Color("#0066ff")).
-		MarginBottom(1)
+	title := styleTitle.Render(" ⚡ Running Benchmark ")
 
-	title := titleStyle.Render("Running Benchmark...")
+	var lines []string
+	lines = append(lines, "")
+	lines = append(lines, title)
+	lines = append(lines, "")
+
+	// Current status
+	currentServer := m.progress.CurrentServer
+	if currentServer == "" {
+		currentServer = "Initializing..."
+	}
+
+	statusLine := fmt.Sprintf("  Testing: %s",
+		styleHighlight.Render(currentServer))
+	lines = append(lines, statusLine)
+
+	protoLine := fmt.Sprintf("  Protocol: %s",
+		lipgloss.NewStyle().Foreground(colorSecondary).Render(m.progress.CurrentProtocol.String()))
+	lines = append(lines, protoLine)
+	lines = append(lines, "")
 
 	// Progress bar
-	progressBarWidth := 50
-	if m.width > 0 && m.width < 80 {
-		progressBarWidth = m.width - 10
+	barWidth := 50
+	if m.width > 0 && m.width < 70 {
+		barWidth = m.width - 20
 	}
-	
-	progressPercent := int(m.progress.Percentage)
-	if progressPercent > 100 {
-		progressPercent = 100
+
+	percent := m.progress.Percentage
+	if percent > 100 {
+		percent = 100
 	}
-	if progressPercent < 0 {
-		progressPercent = 0
+	if percent < 0 {
+		percent = 0
 	}
-	
-	filled := progressPercent * progressBarWidth / 100
-	empty := progressBarWidth - filled
-	
-	progressBar := strings.Repeat("█", filled) + strings.Repeat("░", empty)
-	
-	progressStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#00ffff"))
-	
-	infoStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#ffffff"))
-	
-	content := fmt.Sprintf(`
-%s
 
-Current: %s (%s)
-Progress: %d/%d tests (%.1f%%)
+	filled := int(percent) * barWidth / 100
+	empty := barWidth - filled
 
-%s
+	progressBar := fmt.Sprintf("  %s%s %s",
+		styleProgressBar.Render(strings.Repeat("█", filled)),
+		styleProgressTrack.Render(strings.Repeat("░", empty)),
+		styleHighlight.Render(fmt.Sprintf("%.0f%%", percent)))
+	lines = append(lines, progressBar)
+	lines = append(lines, "")
 
-[ctrl+c] Quit
-`, 
-		infoStyle.Render("Benchmarking in progress..."),
-		m.progress.CurrentServer,
-		m.progress.CurrentProtocol.String(),
-		m.progress.CompletedTests,
-		m.progress.TotalTests,
-		m.progress.Percentage,
-		progressStyle.Render(progressBar),
-	)
+	// Stats
+	statsLine := fmt.Sprintf("  %s / %s tests completed",
+		styleHighlight.Render(fmt.Sprintf("%d", m.progress.CompletedTests)),
+		styleMuted.Render(fmt.Sprintf("%d", m.progress.TotalTests)))
+	lines = append(lines, statsLine)
 
-	return title + "\n" + content
+	// Elapsed time
+	elapsed := time.Since(m.startTime).Round(time.Second)
+	timeLine := fmt.Sprintf("  Elapsed: %s", styleMuted.Render(elapsed.String()))
+	lines = append(lines, timeLine)
+
+	lines = append(lines, "")
+	lines = append(lines, styleDim.Render("  ───────────────────────────────────"))
+	lines = append(lines, "")
+	lines = append(lines, fmt.Sprintf("  %s Force quit", styleKey.Render("ctrl+c")))
+	lines = append(lines, "")
+
+	return strings.Join(lines, "\n")
 }
 
 // runBenchmark starts a benchmark run asynchronously
@@ -371,16 +583,10 @@ func runBenchmark(servers []config.Server, settings config.Settings, progressCha
 
 		// Start benchmark in a goroutine
 		go func() {
-			// Create runner
 			runner := benchmark.NewRunner(benchConfig)
-
-			// Create context for cancellation
 			ctx := context.Background()
-
-			// Run benchmark
 			results, err := runner.Run(ctx)
-			
-			// Send done message
+
 			doneChan <- benchmarkDoneMsg{
 				results: results,
 				err:     err,
@@ -402,7 +608,6 @@ func runBenchmark(servers []config.Server, settings config.Settings, progressCha
 type progressTickMsg struct{}
 
 // waitForProgress waits for progress updates and sends them as messages
-// Uses a ticker to poll channels periodically
 func waitForProgress(progressChan <-chan benchmark.Progress, doneChan <-chan benchmarkDoneMsg) tea.Cmd {
 	return tea.Tick(100*time.Millisecond, func(t time.Time) tea.Msg {
 		return progressTickMsg{}
@@ -417,11 +622,9 @@ func checkProgress(progressChan <-chan benchmark.Progress, doneChan <-chan bench
 			if ok {
 				return benchmarkProgressMsg(progress)
 			}
-			// Channel closed, check for done
 		case done := <-doneChan:
 			return done
 		default:
-			// No update yet
 		}
 		return nil
 	}
@@ -429,7 +632,7 @@ func checkProgress(progressChan <-chan benchmark.Progress, doneChan <-chan bench
 
 // Run starts the TUI application
 func Run(servers []config.Server, settings config.Settings) error {
-	p := tea.NewProgram(NewModel(servers, settings))
+	p := tea.NewProgram(NewModel(servers, settings), tea.WithAltScreen())
 	_, err := p.Run()
 	return err
 }

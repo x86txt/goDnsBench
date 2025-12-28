@@ -7,16 +7,22 @@ const { title } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
 	<head>
 		<meta charset="UTF-8" />
-		<meta name="description" content="DNS Benchmarking Tool" />
-		<meta name="viewport" content="width=device-width" />
+		<meta name="description" content="goDnsBench - High-Performance DNS Benchmarking Tool" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
+		
+		<!-- Fonts -->
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+		
 		<title>{title}</title>
 	</head>
-	<body class="bg-dark-gray text-white font-sans">
+	<body class="bg-abyss text-cloud font-sans antialiased">
 		<slot />
 	</body>
 </html>
@@ -31,25 +37,119 @@ const { title } = Astro.props;
 		padding: 0;
 	}
 
-	body {
-		min-height: 100vh;
+	html {
+		scroll-behavior: smooth;
 	}
 
-	/* Custom scrollbar */
+	body {
+		min-height: 100vh;
+		background: 
+			radial-gradient(ellipse 80% 50% at 50% -20%, rgba(88, 166, 255, 0.08), transparent),
+			linear-gradient(to bottom, #0d1117, #0a0a0f);
+		background-attachment: fixed;
+	}
+
+	/* Custom scrollbar - Sleek dark theme */
 	::-webkit-scrollbar {
-		width: 10px;
+		width: 8px;
+		height: 8px;
 	}
 
 	::-webkit-scrollbar-track {
-		background: #1e1e1e;
+		background: transparent;
 	}
 
 	::-webkit-scrollbar-thumb {
-		background: #3a3a3a;
-		border-radius: 5px;
+		background: #30363d;
+		border-radius: 4px;
 	}
 
 	::-webkit-scrollbar-thumb:hover {
-		background: #0066ff;
+		background: #484f58;
+	}
+
+	::-webkit-scrollbar-corner {
+		background: transparent;
+	}
+
+	/* Selection */
+	::selection {
+		background: rgba(88, 166, 255, 0.3);
+		color: #f0f6fc;
+	}
+
+	/* Focus styles */
+	:focus-visible {
+		outline: 2px solid #58a6ff;
+		outline-offset: 2px;
+	}
+
+	/* Button base styles */
+	button {
+		font-family: inherit;
+		cursor: pointer;
+	}
+
+	/* Input base styles */
+	input, select, textarea {
+		font-family: inherit;
+	}
+
+	/* Table styles */
+	table {
+		border-collapse: separate;
+		border-spacing: 0;
+	}
+
+	/* Smooth transitions for interactive elements */
+	a, button, input, select, textarea {
+		transition: all 0.15s ease;
+	}
+
+	/* Custom checkbox styles */
+	input[type="checkbox"] {
+		appearance: none;
+		-webkit-appearance: none;
+		width: 18px;
+		height: 18px;
+		border: 2px solid #30363d;
+		border-radius: 4px;
+		background: #161b22;
+		cursor: pointer;
+		position: relative;
+		transition: all 0.15s ease;
+	}
+
+	input[type="checkbox"]:hover {
+		border-color: #484f58;
+		background: #21262d;
+	}
+
+	input[type="checkbox"]:checked {
+		background: linear-gradient(135deg, #1f6feb, #58a6ff);
+		border-color: #58a6ff;
+	}
+
+	input[type="checkbox"]:checked::after {
+		content: '';
+		position: absolute;
+		left: 5px;
+		top: 2px;
+		width: 4px;
+		height: 8px;
+		border: solid white;
+		border-width: 0 2px 2px 0;
+		transform: rotate(45deg);
+	}
+
+	/* Number input hide spinners */
+	input[type="number"]::-webkit-inner-spin-button,
+	input[type="number"]::-webkit-outer-spin-button {
+		-webkit-appearance: none;
+		margin: 0;
+	}
+
+	input[type="number"] {
+		-moz-appearance: textfield;
 	}
 </style>
