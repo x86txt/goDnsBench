@@ -1,5 +1,9 @@
 # goDnsBench
 
+<p align="center">
+  <img src="assets/godnsbench-logo.png" alt="goDnsBench logo" width="720" />
+</p>
+
 A cross-platform DNS benchmarking tool with both TUI and GUI interfaces. Benchmark your DNS servers across multiple protocols including standard DNS, DNS over HTTPS (DoH), DNS over TLS (DoT), and DNS over QUIC (DoQ).
 
 ## Features
@@ -246,7 +250,7 @@ goDnsBench/
 
 - Go 1.21 or higher
 - Bun (for frontend development): `curl -fsSL https://bun.sh/install | bash`
-- Wails CLI (for GUI builds): `go install github.com/wailsapp/wails/v2/cmd/wails@latest`
+- Wails CLI (for `make dev` / `make build-gui`): `go install github.com/wailsapp/wails/v2/cmd/wails@latest`
 
 ### Make Commands
 
@@ -265,6 +269,8 @@ make run-gui       # Build and run in GUI mode
 make dev           # Run Wails dev server (hot reload)
 make install       # Install to $GOPATH/bin
 ```
+
+**Note**: Wails requires specific build tags and platform linker flags for manual builds; `make build` handles this for you. (Plain `go build .` will compile, but the GUI won't launch.)
 
 ### Development Workflow
 
@@ -285,7 +291,10 @@ make run-tui
 
 **Production Build:**
 ```bash
-# Build unified binary
+# Build unified binary (includes both GUI and TUI)
+make build
+
+# Or build desktop application bundle with Wails (for distribution)
 make build-gui
 ```
 
